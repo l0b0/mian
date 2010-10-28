@@ -27,6 +27,7 @@ setup(
         'Topic :: Artistic Software',
         'Topic :: Multimedia :: Graphics'
     ],
+    test_suite = 'tests.tests',
     author = module_author,
     author_email = module_email,
     maintainer = module_maintainer,
