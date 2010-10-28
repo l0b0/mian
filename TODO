@@ -1,1 +1,3 @@
 Use mathplotlib instead of gnuplot?
+
+Faster alternative for huge zip operation with 128 multiples of each block.
