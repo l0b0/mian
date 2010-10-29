@@ -239,7 +239,6 @@ def mian(world_dir, output_file, block_types):
         y_counts.append(count_block_types(layer))
 
     data = izip(*y_counts)
-    print data
 
     gnuplot = Gnuplot.Gnuplot()
     gnuplot('set term png')
