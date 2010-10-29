@@ -205,43 +205,39 @@ def mian(world_dir, output_file, block_types):
     """
     paths = glob(join(world_dir, '*/*/*.dat')) # All world blocks
 
-    xyz_values = []
+    raw_blocks = ""
 
     # Unpack block format
     # <http://www.minecraftwiki.net/wiki/Alpha_Level_Format#Block_Format>
     for path in paths:
         nbtfile = NBTFile(path,'rb')
 
-        yzx_block = nbtfile["Level"]["Blocks"].value
-
-        yzx_block_list = [iter(yzx_block)]
-
-        xyz_block = izip(
-                *yzx_block_list * CHUNK_SIZE_Y)
-
-        xyz_values.extend(xyz_block)
+        raw_blocks += nbtfile["Level"]["Blocks"].value
 
         nbtfile.file.close()
 
-    zxy_values = izip(*xyz_values)
+    layers = [raw_blocks[i::128] for i in xrange(127)]
 
     bt_hexes = block_types.keys()
     bt_names = block_types.values()
 
     def count_block_types(layer):
-        def filter_block(bname):
-            return len([block for block in layer if block == bname])
+        result = [0 for i in xrange(len(block_types))]
 
-        return map(filter_block, bt_hexes)
+        for block in layer:
+            if block in bt_hexes:
+                result[bt_hexes.index(block)] += 1
+
+        return result
 
     y_counts = []
-    for layer in zxy_values:
+    for layer in layers:
         y_counts.append(count_block_types(layer))
 
     data = izip(*y_counts)
 
     gnuplot = Gnuplot.Gnuplot()
-    gnuplot('set term png')
+    #gnuplot('set term png')
     gnuplot('set out "%s"' % output_file)
     gnuplot('set style data lines')
 
