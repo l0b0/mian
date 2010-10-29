@@ -21,6 +21,24 @@ import unittest
 from mian import mian
 
 
+class TestLookup(unittest.TestCase):
+    """Framework for testing lookup of block types."""
+    # pylint: disable-msg=R0904
+
+    def test_substring(self):
+        """Substring match."""
+        self.assertEquals(
+            mian._lookup_block_type('gold'),
+            {'\x29': 'Gold block', '\x0e': 'Gold ore'})
+
+
+    def test_hex(self):
+        """Hex ID match."""
+        self.assertEquals(
+            mian._lookup_block_type('20'),
+            {'\x20': 'Magenta cloth'})
+
+
 class TestDoc(unittest.TestCase):
     """Test Python documentation strings."""
     def test_doc(self):
