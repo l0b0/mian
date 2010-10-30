@@ -195,7 +195,28 @@ def print_block_types():
         print hex(ord(key))[2:].upper().zfill(2), value
 
 
-def mian(world_dir, output_file, block_types):
+def plot(counts, output_file = None):
+    """Actual plotting of data."""
+    gnuplot = Gnuplot.Gnuplot()
+
+    if output_file is None:
+        pass # Must have Gnuplot with X11 extension!
+    else:
+        gnuplot('set term png')
+        gnuplot('set out "%s"' % output_file)
+
+    gnuplot('set style data lines')
+
+    plot_data = (
+        Gnuplot.PlotItems.Data(
+            list(enumerate(block_counts)),
+            title=BLOCK_TYPES.values()[index]) \
+            for index, block_counts in enumerate(counts))
+
+    gnuplot.plot(*plot_data)
+
+
+def mian(world_dir, block_types, output_file = None):
     """
     Runs through the DAT files and creates the output.
 
@@ -219,7 +240,6 @@ def mian(world_dir, output_file, block_types):
     layers = [raw_blocks[i::128] for i in xrange(127)]
 
     bt_hexes = block_types.keys()
-    bt_names = block_types.values()
 
     def count_block_types(layer):
         result = [0 for i in xrange(len(block_types))]
@@ -234,19 +254,9 @@ def mian(world_dir, output_file, block_types):
     for layer in layers:
         y_counts.append(count_block_types(layer))
 
-    data = izip(*y_counts)
+    counts = izip(*y_counts)
 
-    gnuplot = Gnuplot.Gnuplot()
-    gnuplot('set term png')
-    gnuplot('set out "%s"' % output_file)
-    gnuplot('set style data lines')
-
-    plot_data = (
-        Gnuplot.PlotItems.Data(
-            list(enumerate(block)),
-            title=bt_names[index]) for index, block in enumerate(data))
-
-    gnuplot.plot(*plot_data)
+    plot(counts, output_file)
 
 
 def main(argv = None):
@@ -289,7 +299,10 @@ def main(argv = None):
     for name in block_block_names:
         block_types.update(_lookup_block_type(name))
 
-    mian(world_dir, output_file, block_types)
+    mian(
+        world_dir = world_dir,
+        block_types = block_types,
+        output_file = output_file)
 
 
 if __name__ == '__main__':
