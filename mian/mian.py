@@ -166,7 +166,7 @@ def _lookup_block_type(block_type):
 
     if block_type is None or len(block_type) == 0:
         warnings.warn('Empty block type')
-        return None
+        return {}
 
     block_type = block_type.lower()
 
