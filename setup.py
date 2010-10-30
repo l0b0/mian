@@ -8,7 +8,7 @@ from mian.mian import __author__ as module_author, __doc__ as module_doc, __emai
 
 setup(
     name = 'mian',
-    version = '0.2.1',
+    version = '0.3',
     description = 'Graph blocks to height in a Minecraft save game',
     long_description = module_doc,
     url = 'http://pepijndevos.nl/where-to-dig-in-minecraft',

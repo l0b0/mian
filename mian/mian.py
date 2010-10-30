@@ -237,7 +237,7 @@ def mian(world_dir, output_file, block_types):
     data = izip(*y_counts)
 
     gnuplot = Gnuplot.Gnuplot()
-    #gnuplot('set term png')
+    gnuplot('set term png')
     gnuplot('set out "%s"' % output_file)
     gnuplot('set style data lines')
 
