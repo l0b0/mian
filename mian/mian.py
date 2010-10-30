@@ -41,7 +41,6 @@ __license__ = 'GPL v3 or newer'
 from binascii import unhexlify
 from getopt import getopt, GetoptError
 from glob import glob
-from itertools import izip
 import matplotlib.pyplot as plt
 from nbt.nbt import NBTFile
 from os.path import join
@@ -193,27 +192,6 @@ def print_block_types():
         print hex(ord(key))[2:].upper().zfill(2), value
 
 
-def count_bt_hexes(layer, bt_hexes):
-    """
-    Get count of each block type in a single layer.
-
-    @param layer: String of blocks.
-    @param bt_hexes: Subset of BLOCK_TYPES.keys().
-    @return: List of integers.
-
-    Examples:
-    >>> count_bt_hexes('\\x02\\x00\\x01\\x01\\x00\\x01', ['\\x01', '\\x02'])
-    [3, 1]
-    """
-    result = [0 for i in xrange(len(bt_hexes))]
-
-    for index in xrange(len(layer)):
-        if layer[index] in bt_hexes:
-            result[bt_hexes.index(layer[index])] += 1
-
-    return result
-
-
 def plot(counts, bt_hexes):
     """
     Actual plotting of data.
@@ -254,12 +232,12 @@ def mian(world_dir, bt_hexes):
         nbtfile.file.close()
 
     layers = [raw_blocks[i::128] for i in xrange(127)]
-
-    y_counts = []
-    for layer in layers:
-        y_counts.append(count_bt_hexes(layer, bt_hexes))
-
-    counts = izip(*y_counts)
+    
+    counts = [[] for i in xrange(len(bt_hexes))]
+    for bt_index in range(len(bt_hexes)):
+        bt_hex = bt_hexes[bt_index]
+        for layer in layers:
+            counts[bt_index].append(layer.count(bt_hex))
 
     plot(counts, bt_hexes)
 
