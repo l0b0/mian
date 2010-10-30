@@ -46,11 +46,10 @@ import matplotlib.pyplot as plt
 from nbt.nbt import NBTFile
 from os.path import join
 from signal import signal, SIGPIPE, SIG_DFL
-from string import hexdigits
 import sys
 import warnings
 
-ARG_ERROR = 'You need to specify exactly one save directory.'
+HEXDIGITS = '0123456789abcdef'
 
 BLOCK_TYPES = {
     '\x00': 'Air',
@@ -171,7 +170,7 @@ def _lookup_block_type(block_type):
 
     block_type = block_type.lower()
 
-    if len(block_type) == 2 and all(char in hexdigits for char in block_type):
+    if len(block_type) == 2 and all(char in HEXDIGITS for char in block_type):
         # Look up single block type by hex value
         for key, value in BLOCK_TYPES.iteritems():
             if key == unhexlify(block_type):
@@ -279,7 +278,7 @@ def main(argv = None):
             sys.stderr.write('Unhandled option %s\n' % option)
             return 2
 
-    assert len(args) == 1, ARG_ERROR
+    assert len(args) == 1, 'You need to specify exactly one save directory.'
     world_dir = args[0]
 
     # Look up block_types
