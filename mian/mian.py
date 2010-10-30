@@ -193,12 +193,17 @@ def print_block_types():
         print hex(ord(key))[2:].upper().zfill(2), value
 
 
-def plot(counts):
-    """Actual plotting of data."""
+def plot(counts, labels):
+    """
+    Actual plotting of data.
+    
+    @param counts: Integer counts per layer.
+    @param labels: Subset of BLOCK_TYPES.values().
+    """
     for index, block_counts in enumerate(counts):
         plt.plot(
             block_counts,
-            label = BLOCK_TYPES.values()[index],
+            label = labels[index],
             linewidth = 1)
 
     plt.legend()
@@ -206,6 +211,23 @@ def plot(counts):
     plt.xlabel('Y (world height)')
 
     plt.show()
+
+
+def count_block_types(layer, bt_hexes):
+    """
+    Get count of each block type in a single layer.
+    
+    @param layer: String of blocks.
+    @param bt_hexes: Subset of BLOCK_TYPES.keys().
+    @return: List of integers.
+    """
+    result = [0 for i in xrange(len(bt_hexes))]
+
+    for index in xrange(len(layer)):
+        if layer[index] in bt_hexes:
+            result[bt_hexes.index(layer[index])] += 1
+
+    return result
 
 
 def mian(world_dir, block_types):
@@ -217,37 +239,26 @@ def mian(world_dir, block_types):
     """
     paths = glob(join(world_dir, '*/*/*.dat')) # All world blocks
 
-    raw_blocks = ""
+    raw_blocks = ''
 
     # Unpack block format
     # <http://www.minecraftwiki.net/wiki/Alpha_Level_Format#Block_Format>
     for path in paths:
         nbtfile = NBTFile(path,'rb')
 
-        raw_blocks += nbtfile["Level"]["Blocks"].value
+        raw_blocks += nbtfile['Level']['Blocks'].value
 
         nbtfile.file.close()
 
     layers = [raw_blocks[i::128] for i in xrange(127)]
 
-    bt_hexes = block_types.keys()
-
-    def count_block_types(layer):
-        result = [0 for i in xrange(len(block_types))]
-
-        for block in layer:
-            if block in bt_hexes:
-                result[bt_hexes.index(block)] += 1
-
-        return result
-
     y_counts = []
     for layer in layers:
-        y_counts.append(count_block_types(layer))
+        y_counts.append(count_block_types(layer, block_types.keys()))
 
     counts = izip(*y_counts)
 
-    plot(counts)
+    plot(counts, block_types.values())
 
 
 def main(argv = None):
@@ -257,7 +268,7 @@ def main(argv = None):
         argv = sys.argv
 
     # Defaults
-    block_block_names = DEFAULT_BLOCK_TYPES
+    block_type_names = DEFAULT_BLOCK_TYPES
 
     try:
         opts, args = getopt(
@@ -270,7 +281,7 @@ def main(argv = None):
 
     for option, value in opts:
         if option in ('-b', '--blocks'):
-            block_block_names = value.split(',')
+            block_type_names = value.split(',')
         elif option in ('-l', '--list'):
             print_block_types()
             return 0
@@ -283,7 +294,7 @@ def main(argv = None):
 
     # Look up block_types
     block_types = {}
-    for name in block_block_names:
+    for name in block_type_names:
         block_types.update(_lookup_block_type(name))
 
     mian(
