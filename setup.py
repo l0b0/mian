@@ -8,13 +8,13 @@ from mian.mian import __author__ as module_author, __doc__ as module_doc, __emai
 
 setup(
     name = 'mian',
-    version = '0.3',
+    version = '0.4',
     description = 'Graph blocks to height in a Minecraft save game',
     long_description = module_doc,
     url = 'http://pepijndevos.nl/where-to-dig-in-minecraft',
     keywords = 'Minecraft graph graphs block blocks',
     packages = find_packages(exclude=['tests']),
-    install_requires = ['gnuplot-py', 'nbt'],
+    install_requires = ['nbt'],
     entry_points = {
         'console_scripts': ['mian = mian.mian:main']},
     classifiers = [

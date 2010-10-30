@@ -1,3 +1,7 @@
 mian - Mine analysis - Graph blocks to height in a Minecraft save game
 
-Installation / upgrade: sudo easy_install -U mian
+Ubuntu GNU/Linux instructions:
+
+Installation: sudo apt-get install python-matplotlib && sudo easy_install mian
+
+Upgrade: sudo easy_install -U mian

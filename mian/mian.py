@@ -13,7 +13,6 @@ Options:
                 either the block_names or hex values from the list.
 -l, --list      List available block types (from
                 <http://www.minecraftwiki.net/wiki/Data_values>).
--o, --output    Output file name, defaults to WorldX.png.
 
 Description:
 
@@ -42,10 +41,10 @@ __license__ = 'GPL v3 or newer'
 from binascii import unhexlify
 from getopt import getopt, GetoptError
 from glob import glob
-import Gnuplot
 from itertools import izip
+import matplotlib.pyplot as plt
 from nbt.nbt import NBTFile
-from os.path import join, split
+from os.path import join
 from signal import signal, SIGPIPE, SIG_DFL
 from string import hexdigits
 import sys
@@ -195,33 +194,26 @@ def print_block_types():
         print hex(ord(key))[2:].upper().zfill(2), value
 
 
-def plot(counts, output_file = None):
+def plot(counts):
     """Actual plotting of data."""
-    gnuplot = Gnuplot.Gnuplot()
+    for index, block_counts in enumerate(counts):
+        plt.plot(
+            block_counts,
+            label = BLOCK_TYPES.values()[index],
+            linewidth = 1)
 
-    if output_file is None:
-        pass # Must have Gnuplot with X11 extension!
-    else:
-        gnuplot('set term png')
-        gnuplot('set out "%s"' % output_file)
+    plt.legend()
+    plt.ylabel('Count')
+    plt.xlabel('Y (world height)')
 
-    gnuplot('set style data lines')
-
-    plot_data = (
-        Gnuplot.PlotItems.Data(
-            list(enumerate(block_counts)),
-            title=BLOCK_TYPES.values()[index]) \
-            for index, block_counts in enumerate(counts))
-
-    gnuplot.plot(*plot_data)
+    plt.show()
 
 
-def mian(world_dir, block_types, output_file = None):
+def mian(world_dir, block_types):
     """
     Runs through the DAT files and creates the output.
 
     @param world_dir: Path to existing Minecraft world directory.
-    @param output_file: Path to file which should be written.
     @param block_types: Subset of BLOCK_TYPES.
     """
     paths = glob(join(world_dir, '*/*/*.dat')) # All world blocks
@@ -256,7 +248,7 @@ def mian(world_dir, block_types, output_file = None):
 
     counts = izip(*y_counts)
 
-    plot(counts, output_file)
+    plot(counts)
 
 
 def main(argv = None):
@@ -267,7 +259,6 @@ def main(argv = None):
 
     # Defaults
     block_block_names = DEFAULT_BLOCK_TYPES
-    output_file = None
 
     try:
         opts, args = getopt(
@@ -284,15 +275,12 @@ def main(argv = None):
         elif option in ('-l', '--list'):
             print_block_types()
             return 0
-        elif option in ('-o', '--output'):
-            output_file = value
+        else:
+            sys.stderr.write('Unhandled option %s\n' % option)
+            return 2
 
     assert len(args) == 1, ARG_ERROR
     world_dir = args[0]
-
-    if output_file is None:
-        # Use savegame directory name
-        output_file = split(world_dir)[1] + '.png'
 
     # Look up block_types
     block_types = {}
@@ -301,8 +289,7 @@ def main(argv = None):
 
     mian(
         world_dir = world_dir,
-        block_types = block_types,
-        output_file = output_file)
+        block_types = block_types)
 
 
 if __name__ == '__main__':
