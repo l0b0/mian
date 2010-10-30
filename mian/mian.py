@@ -156,17 +156,17 @@ signal(SIGPIPE, SIG_DFL)
 """Avoid 'Broken pipe' message when canceling piped command."""
 
 
-def _lookup_block_type(block_type):
+def lookup_block_type(block_type):
     """
     Find block types based on input string.
 
     @param block_type: Name or hex ID of a block type.
-    @return: Subset of BLOCK_TYPES.
+    @return: Subset of BLOCK_TYPES.keys().
     """
 
     if block_type is None or len(block_type) == 0:
         warnings.warn('Empty block type')
-        return {}
+        return []
 
     block_type = block_type.lower()
 
@@ -174,13 +174,13 @@ def _lookup_block_type(block_type):
         # Look up single block type by hex value
         for key, value in BLOCK_TYPES.iteritems():
             if key == unhexlify(block_type):
-                return {key: value}
+                return [key]
 
-    # Name substring search
-    result = {}
+    # Name substring search, could have multiple results
+    result = []
     for key, value in BLOCK_TYPES.iteritems():
         if value.lower().find(block_type) != -1:
-            result[key] = BLOCK_TYPES[key]
+            result.append(key)
 
     if result == []:
         warnings.warn('Unknown block type %s' % block_type)
@@ -193,33 +193,17 @@ def print_block_types():
         print hex(ord(key))[2:].upper().zfill(2), value
 
 
-def plot(counts, labels):
-    """
-    Actual plotting of data.
-    
-    @param counts: Integer counts per layer.
-    @param labels: Subset of BLOCK_TYPES.values().
-    """
-    for index, block_counts in enumerate(counts):
-        plt.plot(
-            block_counts,
-            label = labels[index],
-            linewidth = 1)
-
-    plt.legend()
-    plt.ylabel('Count')
-    plt.xlabel('Y (world height)')
-
-    plt.show()
-
-
-def count_block_types(layer, bt_hexes):
+def count_bt_hexes(layer, bt_hexes):
     """
     Get count of each block type in a single layer.
-    
+
     @param layer: String of blocks.
     @param bt_hexes: Subset of BLOCK_TYPES.keys().
     @return: List of integers.
+
+    Examples:
+    >>> count_bt_hexes('\\x02\\x00\\x01\\x01\\x00\\x01', ['\\x01', '\\x02'])
+    [3, 1]
     """
     result = [0 for i in xrange(len(bt_hexes))]
 
@@ -230,21 +214,40 @@ def count_block_types(layer, bt_hexes):
     return result
 
 
-def mian(world_dir, block_types):
+def plot(counts, bt_hexes):
     """
-    Runs through the DAT files and creates the output.
+    Actual plotting of data.
+
+    @param counts: Integer counts per layer.
+    @param bt_hexes: Subset of BLOCK_TYPES.keys().
+    """
+    for index, block_counts in enumerate(counts):
+        plt.plot(
+            block_counts,
+            label = BLOCK_TYPES[bt_hexes[index]],
+            linewidth = 1)
+
+    plt.legend()
+    plt.ylabel('Count')
+    plt.xlabel('Y (world height)')
+
+    plt.show()
+
+
+def mian(world_dir, bt_hexes):
+    """
+    Runs through the DAT files and gets the layer counts for the plot.
 
     @param world_dir: Path to existing Minecraft world directory.
-    @param block_types: Subset of BLOCK_TYPES.
+    @param bt_hexes: Subset of BLOCK_TYPES.keys().
     """
     paths = glob(join(world_dir, '*/*/*.dat')) # All world blocks
 
-    raw_blocks = ''
-
     # Unpack block format
     # <http://www.minecraftwiki.net/wiki/Alpha_Level_Format#Block_Format>
+    raw_blocks = ''
     for path in paths:
-        nbtfile = NBTFile(path,'rb')
+        nbtfile = NBTFile(path, 'rb')
 
         raw_blocks += nbtfile['Level']['Blocks'].value
 
@@ -254,11 +257,11 @@ def mian(world_dir, block_types):
 
     y_counts = []
     for layer in layers:
-        y_counts.append(count_block_types(layer, block_types.keys()))
+        y_counts.append(count_bt_hexes(layer, bt_hexes))
 
     counts = izip(*y_counts)
 
-    plot(counts, block_types.values())
+    plot(counts, bt_hexes)
 
 
 def main(argv = None):
@@ -293,13 +296,11 @@ def main(argv = None):
     world_dir = args[0]
 
     # Look up block_types
-    block_types = {}
+    bt_hexes = []
     for name in block_type_names:
-        block_types.update(_lookup_block_type(name))
+        bt_hexes.extend(lookup_block_type(name))
 
-    mian(
-        world_dir = world_dir,
-        block_types = block_types)
+    mian(world_dir, bt_hexes)
 
 
 if __name__ == '__main__':
