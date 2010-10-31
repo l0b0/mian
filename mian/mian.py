@@ -136,7 +136,13 @@ BLOCK_TYPES = {
     '\x52': 'Clay',
     '\x53': 'Reed',
     '\x54': 'Jukebox',
-    '\x55': 'Fence'}
+    '\x55': 'Fence',
+    '\x56': 'Pumpkin',
+    '\x57': 'Bloodstone',
+    '\x58': 'Slow sand',
+    '\x59': 'Lightstone',
+    '\x5a': 'Portal',
+    '\x5b': 'Jack-o-lantern'}
 
 DEFAULT_BLOCK_TYPES = [
     'clay',
