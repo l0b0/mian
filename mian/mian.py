@@ -10,7 +10,7 @@ mian [-b|--blocks=<list>] [-l|--list] <World directory>
 Options:
 
 -b, --blocks    Specify block types to include as a comma-separated list, using
-                either the block_names or hex values from the list.
+                either the block types or hex values from the list.
 -l, --list      List available block types (from
                 <http://www.minecraftwiki.net/wiki/Data_values>).
 
@@ -139,13 +139,13 @@ BLOCK_TYPES = {
     '\x55': 'Fence'}
 
 DEFAULT_BLOCK_TYPES = [
-    'Clay',
-    'Coal ore',
-    'Diamond ore',
-    'Gold ore',
-    'Iron ore',
-    'Obsidian',
-    'Redstone ore']
+    'clay',
+    'coal ore',
+    'diamond ore',
+    'gold ore',
+    'iron ore',
+    'obsidian',
+    '49']
 
 CHUNK_SIZE_Y = 128
 CHUNK_SIZE_Z = 16
