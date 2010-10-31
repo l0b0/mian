@@ -5,7 +5,7 @@
 
 Default syntax:
 
-mian [-b|--blocks=<list>] [-l|--list] [-o|--output=path] <World directory>
+mian [-b|--blocks=<list>] [-l|--list] <World directory>
 
 Options:
 
