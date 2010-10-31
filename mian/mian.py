@@ -13,6 +13,7 @@ Options:
                 either the block types or hex values from the list.
 -l, --list      List available block types (from
                 <http://www.minecraftwiki.net/wiki/Data_values>).
+-n, --nether    Graph The Nether instead of the ordinary world.
 
 Description:
 
@@ -24,11 +25,14 @@ Examples:
 $ mian ~/.minecraft/saves/World1
 Creates World1.png in the current directory with the graph.
 
-$ mian --blocks="diamond ore,mob spawner,obsidian" ~/.minecraft/saves/World1
-Ditto, showing only the specified block types
+$ mian -b 01,dirt,09,sand ~/.minecraft/saves/World1
+Ditto, showing only the specified block types.
+
+$ mian -b 56,57,58,59,5a,5b -n ~/.minecraft/saves/World1
+Graph all the materials new to The Nether.
 
 $ mian --list
-Show a list of block types that can be searched for
+Show a list of block types which can be searched for.
 """
 
 __author__ = 'Pepijn de Vos, Victor Engmark'
@@ -43,7 +47,7 @@ from getopt import getopt, GetoptError
 from glob import glob
 import matplotlib.pyplot as plt
 from nbt.nbt import NBTFile
-from os.path import join
+from os.path import join, split
 from signal import signal, SIGPIPE, SIG_DFL
 import sys
 import warnings
@@ -198,13 +202,16 @@ def print_block_types():
         print hex(ord(key))[2:].upper().zfill(2), value
 
 
-def plot(counts, bt_hexes):
+def plot(counts, bt_hexes, title):
     """
     Actual plotting of data.
 
     @param counts: Integer counts per layer.
     @param bt_hexes: Subset of BLOCK_TYPES.keys().
     """
+    fig = plt.figure() 
+    fig.canvas.set_window_title(title)
+
     for index, block_counts in enumerate(counts):
         plt.plot(
             block_counts,
@@ -218,14 +225,23 @@ def plot(counts, bt_hexes):
     plt.show()
 
 
-def mian(world_dir, bt_hexes):
+def mian(world_dir, bt_hexes, nether):
     """
     Runs through the DAT files and gets the layer counts for the plot.
 
     @param world_dir: Path to existing Minecraft world directory.
     @param bt_hexes: Subset of BLOCK_TYPES.keys().
+    @param nether: Whether or not to graph The Nether.
     """
-    paths = glob(join(world_dir, '*/*/*.dat')) # All world blocks
+
+    title = split(world_dir)[1]
+
+    # All world blocks are stored in DAT files
+    if nether:
+        paths = glob(join(world_dir, 'DIM-1/*/*/*.dat'))
+        title += ' Nether'
+    else:
+        paths = glob(join(world_dir, '*/*/*.dat'))
 
     # Unpack block format
     # <http://www.minecraftwiki.net/wiki/Alpha_Level_Format#Block_Format>
@@ -245,7 +261,7 @@ def mian(world_dir, bt_hexes):
         for layer in layers:
             counts[bt_index].append(layer.count(bt_hex))
 
-    plot(counts, bt_hexes)
+    plot(counts, bt_hexes, title)
 
 
 def main(argv = None):
@@ -256,12 +272,13 @@ def main(argv = None):
 
     # Defaults
     block_type_names = DEFAULT_BLOCK_TYPES
+    nether = False
 
     try:
         opts, args = getopt(
             argv[1:],
-            'b:lo:',
-            ['blocks=', 'list', 'output='])
+            'b:ln',
+            ['blocks=', 'list', 'nether'])
     except GetoptError, err:
         sys.stderr.write(str(err) + '\n')
         return 2
@@ -269,6 +286,8 @@ def main(argv = None):
     for option, value in opts:
         if option in ('-b', '--blocks'):
             block_type_names = value.split(',')
+        elif option in ('-n', '--nether'):
+            nether = True
         elif option in ('-l', '--list'):
             print_block_types()
             return 0
@@ -284,7 +303,7 @@ def main(argv = None):
     for name in block_type_names:
         bt_hexes.extend(lookup_block_type(name))
 
-    mian(world_dir, bt_hexes)
+    mian(world_dir, bt_hexes, nether)
 
 
 if __name__ == '__main__':
