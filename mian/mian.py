@@ -234,7 +234,7 @@ def lookup_block_type(block_type):
 def print_block_types():
     """Print the block block_names and hexadecimal IDs"""
     for block_hex, block_names in BLOCK_TYPES.iteritems():
-        print hex(ord(block_hex))[2:].upper().zfill(2), block_names.join(', ')
+        print hex(ord(block_hex))[2:].upper().zfill(2), ', '.join(block_names)
 
 
 def plot(counts, bt_hexes, title):
