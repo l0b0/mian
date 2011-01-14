@@ -180,7 +180,8 @@ BLOCK_TYPES = {
         'Australium',
         'Brimstone'],
     '\x5a': ['Portal'],
-    '\x5b': ['Jack-o-lantern']}
+    '\x5b': ['Jack-o-lantern'],
+    '\x5c': ['Cake block'],
 
 DEFAULT_BLOCK_TYPES = [
     'clay',
