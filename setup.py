@@ -11,7 +11,7 @@ setup(
     version = '0.7.1',
     description = 'Graph blocks to height in a Minecraft save game',
     long_description = module_doc,
-    url = 'http://pepijndevos.nl/where-to-dig-in-minecraft',
+    url = 'https://github.com/l0b0/mian/wiki',
     keywords = 'Minecraft graph graphs block blocks',
     packages = find_packages(exclude=['tests']),
     install_requires = ['nbt'],
@@ -32,7 +32,7 @@ setup(
     author_email = module_email,
     maintainer = module_maintainer,
     maintainer_email = module_email,
-    download_url = 'http://github.com/l0b0/mian',
+    download_url = 'http://pypi.python.org/pypi/mian/',
     platforms = ['POSIX', 'Windows'],
     license = module_license,
     )
