@@ -39,6 +39,13 @@ class TestLookup(unittest.TestCase):
             set(['\x20']))
 
 
+    def test_hex(self):
+        """Unused hex ID match."""
+        self.assertEquals(
+            mian.lookup_block_type('ff'),
+            set(['\xff']))
+
+
     def test_empty(self):
         """No match."""
         self.assertEquals(
