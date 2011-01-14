@@ -114,7 +114,7 @@ BLOCK_TYPES = {
     '\x2e': ['TNT'],
     '\x2f': ['Bookshelf'],
     '\x30': [
-        'Moss Stone',
+        'Moss stone',
         'Mossy cobblestone'],
     '\x31': ['Obsidian'],
     '\x32': ['Torch'],
@@ -166,9 +166,9 @@ BLOCK_TYPES = {
         'Bloodstone',
         'Hellstone',
         'Netherstone',
-        'Red Mossy Cobblestone'],
+        'Red mossy cobblestone'],
     '\x58': [
-        'Soul Sand',
+        'Soul sand',
         'Hell mud',
         'Mud',
         'Nethermud',
