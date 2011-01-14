@@ -47,6 +47,7 @@ from getopt import getopt, GetoptError
 from glob import glob
 import matplotlib.pyplot as plt
 from nbt.nbt import NBTFile
+from operator import itemgetter
 from os.path import join, split
 from signal import signal, SIGPIPE, SIG_DFL
 import sys
@@ -399,8 +400,11 @@ def lookup_block_type(block_type):
 
 def print_block_types():
     """Print the block block_names and hexadecimal IDs"""
-    for block_hex, block_names in BLOCK_TYPES.iteritems():
-        print hex(ord(block_hex))[2:].upper().zfill(2), ', '.join(block_names)
+    for block_hex, block_names in sorted(
+        BLOCK_TYPES.iteritems(),
+        key=itemgetter(0)):
+        if block_names != [UNUSED_NAME]:
+            print hex(ord(block_hex))[2:].upper().zfill(2), ', '.join(block_names)
 
 
 def plot(counts, bt_hexes, title):
