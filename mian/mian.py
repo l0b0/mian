@@ -18,12 +18,12 @@ Options:
 Description:
 
 Creates a file with a graph of how much the given materials occur at each
-layer of the map.
+vertical layer of the map.
 
 Examples:
 
 $ mian ~/.minecraft/saves/World1
-Creates World1.png in the current directory with the graph.
+Creates graph of default materials in World1.
 
 $ mian -b 01,dirt,09,sand ~/.minecraft/saves/World1
 Ditto, showing only the specified block types.
@@ -38,7 +38,7 @@ Show a list of block types which can be searched for.
 from __future__ import absolute_import
 
 __author__ = 'Pepijn de Vos, Victor Engmark'
-__copyright__ = 'Copyright (C) 2010 Pepijn de Vos, Victor Engmark'
+__copyright__ = 'Copyright (C) 2010-2011 Pepijn de Vos, Victor Engmark'
 __credits__ = ['Pepijn de Vos', 'Victor Engmark']
 __maintainer__ = 'Victor Engmark'
 __email__ = 'victor.engmark@gmail.com'
