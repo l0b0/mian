@@ -8,7 +8,7 @@ from mian.mian import __author__ as module_author, __doc__ as module_doc, __emai
 
 setup(
     name = 'mian',
-    version = '0.8.2',
+    version = '0.8.3',
     description = 'Graph blocks to height in a Minecraft save game',
     long_description = module_doc,
     url = 'https://github.com/l0b0/mian/wiki',

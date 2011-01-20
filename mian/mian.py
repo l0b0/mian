@@ -35,8 +35,6 @@ $ mian --list
 Show a list of block types which can be searched for.
 """
 
-from __future__ import absolute_import
-
 __author__ = 'Pepijn de Vos, Victor Engmark'
 __copyright__ = 'Copyright (C) 2010-2011 Pepijn de Vos, Victor Engmark'
 __credits__ = ['Pepijn de Vos', 'Victor Engmark']
@@ -55,7 +53,7 @@ from signal import signal, SIGPIPE, SIG_DFL
 import sys
 import warnings
 
-from mian.blocks import BLOCK_TYPES, UNUSED_NAME
+from blocks import BLOCK_TYPES, UNUSED_NAME
 
 HEXDIGITS = '0123456789abcdef'
 
