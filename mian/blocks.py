@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Minecraft block names and hex values from
 http://www.minecraftwiki.net/wiki/Data_values
@@ -55,14 +56,19 @@ BLOCK_TYPES = {
     '\x14': [
         'Glass'],
     '\x15': [
+        'Lapis lazuli ore',
         'Red cloth'],
     '\x16': [
+        'Lapis lazuli block',
         'Orange cloth'],
     '\x17': [
+        'Dispenser',
         'Yellow cloth'],
     '\x18': [
+        'Sandstone',
         'Lime cloth'],
     '\x19': [
+        'Note block',
         'Green cloth'],
     '\x1a': [
         'Aqua green cloth'],
@@ -85,6 +91,7 @@ BLOCK_TYPES = {
     '\x23': [
         'Gray / white cloth'],
     '\x24': [
+        'Wool',
         'White cloth'],
     '\x25': [
         'Yellow flower'],
@@ -99,6 +106,7 @@ BLOCK_TYPES = {
     '\x2a': [
         'Iron block'],
     '\x2b': [
+        'Double stone slab',
         'Double slab',
         'Double step'],
     '\x2c': [
@@ -184,6 +192,7 @@ BLOCK_TYPES = {
     '\x52': [
         'Clay'],
     '\x53': [
+        'Sugar cane',
         'Reed',
         'Bamboo',
         'Papyrus'],
@@ -206,6 +215,7 @@ BLOCK_TYPES = {
         'Nethermud',
         'Slow sand'],
     '\x59': [
+        'Glowstone',
         'Lightstone',
         'Brittle gold',
         'Brightstone',
