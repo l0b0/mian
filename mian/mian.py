@@ -70,6 +70,9 @@ CHUNK_SIZE_Y = 128
 CHUNK_SIZE_Z = 16
 CHUNK_SIZE_X = CHUNK_SIZE_Y * CHUNK_SIZE_Z
 
+LABEL_X = 'Layer'
+LABEL_Y = 'Count'
+
 # pylint: disable-msg=W0105
 signal(SIGPIPE, SIG_DFL)
 """Avoid 'Broken pipe' message when canceling piped command."""
@@ -135,8 +138,8 @@ def plot(counts, bt_hexes, title):
             linewidth = 1)
 
     plt.legend()
-    plt.ylabel('Count')
-    plt.xlabel('Y (world height)')
+    plt.xlabel(LABEL_X)
+    plt.ylabel(LABEL_Y)
 
     plt.show()
 
