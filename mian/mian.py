@@ -125,7 +125,7 @@ def plot(counts, bt_hexes, title):
     @param counts: Integer counts per layer.
     @param bt_hexes: Subset of BLOCK_TYPES.keys().
     """
-    fig = plt.figure() 
+    fig = plt.figure()
     fig.canvas.set_window_title(title)
 
     for index, block_counts in enumerate(counts):
@@ -170,7 +170,7 @@ def mian(world_dir, bt_hexes, nether):
         nbtfile.file.close()
 
     layers = [raw_blocks[i::128] for i in xrange(127)]
-    
+
     counts = [[] for i in xrange(len(bt_hexes))]
     for bt_index in range(len(bt_hexes)):
         bt_hex = bt_hexes[bt_index]
