@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""mian - Mine analysis - Graph block types to height in a Minecraft save game
-<http://github.com/l0b0/mian>
+"""mian - Mine analysis - Graph block types to altitude in a Minecraft save
+game <http://github.com/l0b0/mian>
 
 Default syntax:
 
@@ -11,7 +11,7 @@ Options:
 
 -b, --blocks    Specify block types to include as a comma-separated list, using
                 either the block types or hex values from the list.
--l, --list      List available block types (from
+-l, --list      List available block types and their names (from
                 <http://www.minecraftwiki.net/wiki/Data_values>).
 -n, --nether    Graph The Nether instead of the ordinary world.
 
