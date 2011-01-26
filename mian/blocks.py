@@ -89,9 +89,9 @@ BLOCK_TYPES = {
     '\x22': [
         'Black cloth'],
     '\x23': [
+        'Wool',
         'Gray / white cloth'],
     '\x24': [
-        'Wool',
         'White cloth'],
     '\x25': [
         'Yellow flower'],
@@ -145,6 +145,7 @@ BLOCK_TYPES = {
     '\x3b': [
         'Crops'],
     '\x3c': [
+        'Farmland',
         'Soil'],
     '\x3d': [
         'Furnace'],
