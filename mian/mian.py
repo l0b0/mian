@@ -41,7 +41,7 @@ __credits__ = ['Pepijn de Vos', 'Victor Engmark']
 __maintainer__ = 'Victor Engmark'
 __email__ = 'victor.engmark@gmail.com'
 __license__ = 'GPL v3 or newer'
-__version__ = '0.8.5'
+__version__ = '0.8.6'
 
 from binascii import unhexlify
 from getopt import getopt, GetoptError
@@ -174,7 +174,8 @@ def mian(world_dir, bt_hexes, nether):
 
         raw_blocks += nbtfile['Level']['Blocks'].value
 
-        nbtfile.file.close()
+        if 'close' in dir(nbtfile.file):
+            nbtfile.file.close()
 
     layers = [raw_blocks[i::128] for i in xrange(127)]
 
