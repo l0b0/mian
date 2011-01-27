@@ -162,6 +162,9 @@ def mian(world_dir, bt_hexes, nether):
     else:
         paths = glob(join(world_dir, '*/*/*.dat'))
 
+    if paths == []:
+        raise Usage('Invalid savegame path.')
+
     # Unpack block format
     # <http://www.minecraftwiki.net/wiki/Alpha_Level_Format#Block_Format>
     raw_blocks = ''
@@ -180,7 +183,15 @@ def mian(world_dir, bt_hexes, nether):
         for layer in layers:
             counts[bt_index].append(layer.count(bt_hex))
 
+    if counts == [[] for i in xrange(len(bt_hexes))]:
+        raise Usage('No blocks were recognized.')
+
     plot(counts, bt_hexes, title)
+
+
+class Usage(Exception):
+    def __init__(self, msg):
+        self.msg = msg + '\nSee --help for more information.'
 
 
 def main(argv = None):
@@ -194,35 +205,43 @@ def main(argv = None):
     nether = False
 
     try:
-        opts, args = getopt(
-            argv[1:],
-            'b:ln',
-            ['blocks=', 'list', 'nether'])
-    except GetoptError, err:
-        sys.stderr.write(str(err) + '\n')
+        try:
+            opts, args = getopt(
+                argv[1:],
+                'b:ln',
+                ['blocks=', 'list', 'nether'])
+        except GetoptError, err:
+            raise Usage(str(err))
+
+        for option, value in opts:
+            if option in ('-b', '--blocks'):
+                block_type_names = value.split(',')
+            elif option in ('-n', '--nether'):
+                nether = True
+            elif option in ('-l', '--list'):
+                print_block_types()
+                return 0
+            else:
+                raise Usage('Unhandled option %s.' % option)
+    
+        if len(args) == 0:
+            raise Usage('You need to specify a save directory.')
+
+        if len(args) != 1:
+            raise Usage('You need to specify exactly one save directory.')
+
+        world_dir = args[0]
+    
+        # Look up block_types
+        bt_hexes = []
+        for name in block_type_names:
+            bt_hexes.extend(lookup_block_type(name))
+    
+        mian(world_dir, bt_hexes, nether)
+
+    except Usage, err:
+        sys.stderr.write(err.msg + '\n')
         return 2
-
-    for option, value in opts:
-        if option in ('-b', '--blocks'):
-            block_type_names = value.split(',')
-        elif option in ('-n', '--nether'):
-            nether = True
-        elif option in ('-l', '--list'):
-            print_block_types()
-            return 0
-        else:
-            sys.stderr.write('Unhandled option %s\n' % option)
-            return 2
-
-    assert len(args) == 1, 'You need to specify exactly one save directory.'
-    world_dir = args[0]
-
-    # Look up block_types
-    bt_hexes = []
-    for name in block_type_names:
-        bt_hexes.extend(lookup_block_type(name))
-
-    mian(world_dir, bt_hexes, nether)
 
 
 if __name__ == '__main__':
