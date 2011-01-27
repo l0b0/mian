@@ -41,6 +41,7 @@ __credits__ = ['Pepijn de Vos', 'Victor Engmark']
 __maintainer__ = 'Victor Engmark'
 __email__ = 'victor.engmark@gmail.com'
 __license__ = 'GPL v3 or newer'
+__version__ = '0.8.5'
 
 from binascii import unhexlify
 from getopt import getopt, GetoptError
@@ -185,6 +186,8 @@ def mian(world_dir, bt_hexes, nether):
 
     if counts == [[] for i in xrange(len(bt_hexes))]:
         raise Usage('No blocks were recognized.')
+
+    title += ' - mian ' + __version__
 
     plot(counts, bt_hexes, title)
 
