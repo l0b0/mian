@@ -208,8 +208,8 @@ def main(argv = None):
         try:
             opts, args = getopt(
                 argv[1:],
-                'b:ln',
-                ['blocks=', 'list', 'nether'])
+                'b:lnh',
+                ['blocks=', 'list', 'nether', 'help'])
         except GetoptError, err:
             raise Usage(str(err))
 
@@ -220,6 +220,9 @@ def main(argv = None):
                 nether = True
             elif option in ('-l', '--list'):
                 print_block_types()
+                return 0
+            elif option in ('-h', '--help'):
+                print __doc__
                 return 0
             else:
                 raise Usage('Unhandled option %s.' % option)
