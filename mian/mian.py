@@ -231,7 +231,7 @@ def main(argv = None):
                 return 0
             else:
                 raise Usage('Unhandled option %s.' % option)
-    
+
         if len(args) == 0:
             raise Usage('You need to specify a save directory.')
 
@@ -239,12 +239,12 @@ def main(argv = None):
             raise Usage('You need to specify exactly one save directory.')
 
         world_dir = args[0]
-    
+
         # Look up block_types
         bt_hexes = []
         for name in block_type_names:
             bt_hexes.extend(lookup_block_type(name))
-    
+
         mian(world_dir, bt_hexes, nether)
 
     except Usage, err:
