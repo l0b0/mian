@@ -4,29 +4,21 @@ Setup configuration
 """
 
 from setuptools import find_packages, setup
-from mian.mian import \
-__author__ as module_author, \
-__doc__ as module_doc, \
-__email__ as module_email, \
-__license__ as module_license, \
-__maintainer__ as module_maintainer, \
-__name__ as module_name, \
-__url__ as module_url, \
-__version__ as module_version
+from mian import mian as package
 
 setup(
-    name = module_name,
-    version = module_version,
+    name = package.__name__,
+    version = package.__version__,
     description = 'Graph blocks to height in a Minecraft save game',
-    long_description = module_doc,
-    url = module_url,
+    long_description = package.__doc__,
+    url = package.__url__,
     keywords = 'Minecraft graph graphs block blocks',
     packages = find_packages(exclude=['tests']),
     install_requires = ['nbt'],
     entry_points = {
         'console_scripts': [
             '%(package)s = %(package)s.%(package)s:main' % {
-                'package': module_name}]},
+                'package': package.__name__}]},
     classifiers = [
         'Development Status :: 3 - Alpha',
         'Environment :: Console',
@@ -38,11 +30,11 @@ setup(
         'Topic :: Multimedia :: Graphics'
     ],
     test_suite = 'tests.tests',
-    author = module_author,
-    author_email = module_email,
-    maintainer = module_maintainer,
-    maintainer_email = module_email,
+    author = package.__author__,
+    author_email = package.__email__,
+    maintainer = package.__maintainer__,
+    maintainer_email = package.__email__,
     download_url = 'http://pypi.python.org/pypi/mian/',
     platforms = ['POSIX', 'Windows'],
-    license = module_license,
+    license = package.__license__,
     )
