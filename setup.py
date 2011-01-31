@@ -4,19 +4,21 @@ Setup configuration
 """
 
 from setuptools import find_packages, setup
-from mian.mian import __author__ as module_author, __doc__ as module_doc, __email__ as module_email, __license__ as module_license, __maintainer__ as module_maintainer, __version__ as module_version
+from mian.mian import __author__ as module_author, __doc__ as module_doc, __email__ as module_email, __license__ as module_license, __maintainer__ as module_maintainer, __name__ as module_name, __url__ as module_url, __version__ as module_version
 
 setup(
-    name = 'mian',
+    name = module_name,
     version = module_version,
     description = 'Graph blocks to height in a Minecraft save game',
     long_description = module_doc,
-    url = 'https://github.com/l0b0/mian/wiki',
+    url = module_url,
     keywords = 'Minecraft graph graphs block blocks',
     packages = find_packages(exclude=['tests']),
     install_requires = ['nbt'],
     entry_points = {
-        'console_scripts': ['mian = mian.mian:main']},
+        'console_scripts': [
+            '%(package)s = %(package)s.%(package)s:main' % {
+                'package': module_name}]},
     classifiers = [
         'Development Status :: 3 - Alpha',
         'Environment :: Console',
