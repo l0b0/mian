@@ -5,7 +5,7 @@ mian test suite
 
 Default syntax:
 
-./tests.py
+./test_package.py
     Run all unit tests
 """
 

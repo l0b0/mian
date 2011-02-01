@@ -13,7 +13,7 @@ setup(
     long_description = package.__doc__,
     url = package.__url__,
     keywords = 'Minecraft graph graphs block blocks',
-    packages = find_packages(exclude=['tests']),
+    packages = find_packages(exclude=['test']),
     install_requires = ['nbt'],
     entry_points = {
         'console_scripts': [
@@ -29,7 +29,7 @@ setup(
         'Topic :: Artistic Software',
         'Topic :: Multimedia :: Graphics'
     ],
-    test_suite = 'tests.tests',
+    test_suite = 'test.test_package',
     author = package.__author__,
     author_email = package.__email__,
     maintainer = package.__maintainer__,
