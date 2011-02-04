@@ -7,18 +7,18 @@ from setuptools import find_packages, setup
 from mian import mian as package
 
 setup(
-    name = package.__name__,
+    name = package.__package__,
     version = package.__version__,
     description = 'Graph blocks to height in a Minecraft save game',
     long_description = package.__doc__,
     url = package.__url__,
     keywords = 'Minecraft graph graphs block blocks',
-    packages = find_packages(exclude=['test']),
+    packages = [package.__package__],
     install_requires = ['nbt'],
     entry_points = {
         'console_scripts': [
             '%(package)s = %(package)s.%(package)s:main' % {
-                'package': package.__name__}]},
+                'package': package.__package__}]},
     classifiers = [
         'Development Status :: 3 - Alpha',
         'Environment :: Console',

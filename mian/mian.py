@@ -42,7 +42,7 @@ __maintainer__ = 'Victor Engmark'
 __email__ = 'victor.engmark@gmail.com'
 __license__ = 'GPL v3 or newer'
 __url__ = 'https://github.com/l0b0/mian/wiki'
-__version__ = '0.8.6'
+__version__ = '0.8.7'
 
 from binascii import unhexlify
 from getopt import getopt, GetoptError
