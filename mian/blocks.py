@@ -137,9 +137,11 @@ BLOCK_TYPES = {
     '\x37': [
         'Redstone wire'],
     '\x38': [
-        'Diamond ore'],
+        'Diamond ore',
+        'Emerald ore'],
     '\x39': [
-        'Diamond block'],
+        'Diamond block',
+        'Emerald block'],
     '\x3a': [
         'Workbench'],
     '\x3b': [
