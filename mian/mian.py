@@ -143,12 +143,12 @@ def plot(counts, block_type_hexes, title):
     fig = plt.figure()
     fig.canvas.set_window_title(title)
 
-    for index, block_counts in enumerate(counts):
+    for block_type_index in enumerate(block_type_hexes):
         plt.plot(
-            block_counts,
-            label=BLOCK_TYPES[block_type_hexes[index]][0],
+            counts[(block_type_index)],
+            label=BLOCK_TYPES[block_type_index[1]][0],
             linewidth=1)
-
+    
     plt.legend()
     plt.xlabel(LABEL_X)
     plt.ylabel(LABEL_Y)
@@ -176,31 +176,57 @@ def mian(world_dir, block_type_hexes, nether):
 
     if paths == []:
         raise Usage('Invalid savegame path.')
-
+    
+    print "There are %s chunks in the savegame directory" % len(paths)
+    print "Scanning chunks... \n",
+    
     # Unpack block format
     # <http://www.minecraftwiki.net/wiki/Alpha_Level_Format#Block_Format>
     raw_blocks = ''
+    
+    # Create counts dictionary and write a list of 128 zeros on it.
+    counts = {}
+    for block_type_index in enumerate(block_type_hexes):
+        counts[(block_type_index)] = []
+        for layer in range(128):
+            counts[(block_type_index)].append(0)
+    
+    # Used to print status
+    chunk_counter = 0 
+    total_chunks = len(paths)
+    
     for path in paths:
         nbtfile = NBTFile(path, 'rb')
-
-        raw_blocks += nbtfile['Level']['Blocks'].value
-
+        
+        raw_blocks = nbtfile['Level']['Blocks'].value
+        
+        # Count for this chunk and add to the list
+        for block_type_index in enumerate(block_type_hexes):
+            for layer in range(128):
+                old_number = counts[(block_type_index)][layer]
+                counts[(block_type_index)][layer] = raw_blocks[layer::128].count(block_type_index[1]) + old_number
+                
         if 'close' in dir(nbtfile.file):
             nbtfile.file.close()
+        
+        # Print status
+        chunk_counter +=1
+        if chunk_counter > 0:
+            if chunk_counter % 1000 == 0 or 1000 % chunk_counter == 0:
+                print  chunk_counter,"/",total_chunks
 
-    layers = [raw_blocks[i::128] for i in xrange(127)]
-
-    counts = [[] for i in xrange(len(block_type_hexes))]
-    for bt_index in range(len(block_type_hexes)):
-        bt_hex = block_type_hexes[bt_index]
-        for layer in layers:
-            counts[bt_index].append(layer.count(bt_hex))
-
-    if counts == [[] for i in xrange(len(block_type_hexes))]:
+    blocks_found = False
+    
+    for block_type_index in enumerate(block_type_hexes):
+        if counts[(block_type_index)] != [0]*128:
+            blocks_found = True
+            break                         # there's at least one block found
+            
+    if blocks_found == False:
         raise Usage('No blocks were recognized.')
 
     title += ' - mian ' + __version__
-
+    print "Done!"
     plot(counts, block_type_hexes, title)
 
 
