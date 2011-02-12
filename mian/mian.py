@@ -57,7 +57,7 @@ import warnings
 
 from blocks import BLOCK_TYPES, UNUSED_NAME
 
-HEXDIGITS = '0123456789abcdef'
+HEX_DIGITS = '0123456789abcdef'
 
 DEFAULT_BLOCK_TYPES = [
     'clay',
@@ -89,25 +89,23 @@ def lookup_block_type(block_type):
 
     if block_type is None or len(block_type) == 0:
         warnings.warn('Empty block type')
-        return set([])
+        return []
 
     block_type = block_type.lower()
 
-    if len(block_type) == 2 and all(char in HEXDIGITS for char in block_type):
-        # Look up single block type by hex value
-        for block_hex, block_names in BLOCK_TYPES.iteritems():
-            if block_hex == unhexlify(block_type):
-                return set([block_hex])
+    if [char in HEX_DIGITS for char in block_type] == [True, True]:
+        # 2 hex digits
+        return [unhexlify(block_type)]
 
     # Name substring search, could have multiple results
-    result = set([])
+    result = []
     for block_hex, block_names in BLOCK_TYPES.iteritems(): # Block
         for block_name in block_names: # Synonyms
             if block_name.lower().find(block_type) != -1:
-                result.add(block_hex)
-
-    if result == set([]):
+                result.append(block_hex)
+    if result == []:
         warnings.warn('Unknown block type %s' % block_type)
+
     return result
 
 
@@ -121,12 +119,12 @@ def print_block_types():
             sys.stdout.write(', '.join(block_names) + '\n')
 
 
-def plot(counts, bt_hexes, title):
+def plot(counts, block_type_hexes, title):
     """
     Actual plotting of data.
 
     @param counts: Integer counts per layer.
-    @param bt_hexes: Subset of BLOCK_TYPES.keys().
+    @param block_type_hexes: Subset of BLOCK_TYPES.keys().
     """
     fig = plt.figure()
     fig.canvas.set_window_title(title)
@@ -144,12 +142,12 @@ def plot(counts, bt_hexes, title):
     plt.show()
 
 
-def mian(world_dir, bt_hexes, nether):
+def mian(world_dir, block_type_hexes, nether):
     """
     Runs through the DAT files and gets the layer counts for the plot.
 
     @param world_dir: Path to existing Minecraft world directory.
-    @param bt_hexes: Subset of BLOCK_TYPES.keys().
+    @param block_type_hexes: Subset of BLOCK_TYPES.keys().
     @param nether: Whether or not to graph The Nether.
     """
 
@@ -178,18 +176,18 @@ def mian(world_dir, bt_hexes, nether):
 
     layers = [raw_blocks[i::128] for i in xrange(127)]
 
-    counts = [[] for i in xrange(len(bt_hexes))]
-    for bt_index in range(len(bt_hexes)):
-        bt_hex = bt_hexes[bt_index]
+    counts = [[] for i in xrange(len(block_type_hexes))]
+    for bt_index in range(len(block_type_hexes)):
+        bt_hex = block_type_hexes[bt_index]
         for layer in layers:
             counts[bt_index].append(layer.count(bt_hex))
 
-    if counts == [[] for i in xrange(len(bt_hexes))]:
+    if counts == [[] for i in xrange(len(block_type_hexes))]:
         raise Usage('No blocks were recognized.')
 
     title += ' - mian ' + __version__
 
-    plot(counts, bt_hexes, title)
+    plot(counts, block_type_hexes, title)
 
 
 class Usage(Exception):
@@ -240,11 +238,14 @@ def main(argv = None):
         world_dir = args[0]
 
         # Look up block_types
-        bt_hexes = []
-        for name in block_type_names:
-            bt_hexes.extend(lookup_block_type(name))
+        block_type_hexes = []
+        for block_type_name in block_type_names:
+            found_hexes = lookup_block_type(block_type_name)
+            for found_hex in found_hexes:
+                if found_hex not in block_type_hexes: # Avoid duplicates
+                    block_type_hexes.append(found_hex)
 
-        mian(world_dir, bt_hexes, nether)
+        mian(world_dir, block_type_hexes, nether)
 
     except Usage, err:
         sys.stderr.write(err.msg + '\n')

@@ -27,36 +27,32 @@ class TestLookup(unittest.TestCase):
     def test_substring(self):
         """Substring match."""
         self.assertEquals(
-            set(mian.lookup_block_type('gold')),
-            set(['\x0e', '\x29', '\x59']))
-
+            mian.lookup_block_type('gold'),
+            ['\x0e', '\x29', '\x59'])
 
     def test_hex(self):
         """Hex ID match."""
         self.assertEquals(
             mian.lookup_block_type('20'),
-            set(['\x20']))
-
+            ['\x20'])
 
     def test_unused_hex(self):
         """Unused hex ID match."""
         self.assertEquals(
             mian.lookup_block_type('ff'),
-            set(['\xff']))
-
+            ['\xff'])
 
     def test_empty(self):
         """No match."""
         self.assertEquals(
             mian.lookup_block_type(''),
-            set([]))
-
+            [])
 
     def test_unknown(self):
         """Unknown block type."""
         self.assertEquals(
             mian.lookup_block_type('foobar'),
-            set([]))
+            [])
 
 
 class TestDoc(unittest.TestCase):
