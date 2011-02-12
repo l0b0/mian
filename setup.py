@@ -3,7 +3,7 @@
 Setup configuration
 """
 
-from setuptools import find_packages, setup
+from setuptools import setup
 from mian import mian as package
 
 setup(
