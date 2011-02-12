@@ -75,10 +75,8 @@ CHUNK_SIZE_X = CHUNK_SIZE_Y * CHUNK_SIZE_Z
 LABEL_X = 'Layer'
 LABEL_Y = 'Count'
 
-# pylint: disable-msg=W0105
 signal(SIGPIPE, SIG_DFL)
 """Avoid 'Broken pipe' message when canceling piped command."""
-# pylint: enable-msg=W0105
 
 
 def lookup_block_type(block_type):

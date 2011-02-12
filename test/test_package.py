@@ -23,7 +23,6 @@ from mian import mian
 
 class TestLookup(unittest.TestCase):
     """Framework for testing lookup of block types."""
-    # pylint: disable-msg=R0904
 
     def test_substring(self):
         """Substring match."""
