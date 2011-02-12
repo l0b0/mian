@@ -14,7 +14,7 @@ setup(
     url=package.__url__,
     keywords='Minecraft graph graphs block blocks',
     packages=[package.__package__],
-    install_requires=['nbt'],
+    install_requires=['matplotlib', 'nbt', 'numpy'],
     entry_points={
         'console_scripts': [
             '%(package)s=%(package)s.%(package)s:main' % {
