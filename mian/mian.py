@@ -193,6 +193,7 @@ def mian(world_dir, block_type_hexes, nether):
 class Usage(Exception):
     """Command-line usage error"""
     def __init__(self, msg):
+        super(Usage, self).__init__(msg)
         self.msg = msg + '\nSee --help for more information.'
 
 
