@@ -99,8 +99,8 @@ def lookup_block_type(block_type):
 
     # Name substring search, could have multiple results
     result = []
-    for block_hex, block_names in BLOCK_TYPES.iteritems(): # Block
-        for block_name in block_names: # Synonyms
+    for block_hex, block_names in BLOCK_TYPES.iteritems():  # Block
+        for block_name in block_names:  # Synonyms
             if block_name.lower().find(block_type) != -1:
                 result.append(block_hex)
     if result == []:
@@ -132,8 +132,8 @@ def plot(counts, block_type_hexes, title):
     for index, block_counts in enumerate(counts):
         plt.plot(
             block_counts,
-            label = BLOCK_TYPES[bt_hexes[index]][0],
-            linewidth = 1)
+            label=BLOCK_TYPES[block_type_hexes[index]][0],
+            linewidth=1)
 
     plt.legend()
     plt.xlabel(LABEL_X)
@@ -197,7 +197,7 @@ class Usage(Exception):
         self.msg = msg + '\nSee --help for more information.'
 
 
-def main(argv = None):
+def main(argv=None):
     """Argument handling."""
 
     if argv is None:
@@ -243,7 +243,7 @@ def main(argv = None):
         for block_type_name in block_type_names:
             found_hexes = lookup_block_type(block_type_name)
             for found_hex in found_hexes:
-                if found_hex not in block_type_hexes: # Avoid duplicates
+                if found_hex not in block_type_hexes:  # Avoid duplicates
                     block_type_hexes.append(found_hex)
 
         mian(world_dir, block_type_hexes, nether)
