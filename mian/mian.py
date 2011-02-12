@@ -57,8 +57,10 @@ import warnings
 
 from blocks import BLOCK_TYPES, UNUSED_NAME
 
+#: For binascii.unhexlify()
 HEX_DIGITS = '0123456789abcdef'
 
+#: When running without --blocks
 DEFAULT_BLOCK_TYPES = [
     'clay',
     'coal ore',
@@ -68,11 +70,19 @@ DEFAULT_BLOCK_TYPES = [
     'obsidian',
     '49']
 
+#: Height
 CHUNK_SIZE_Y = 128
+
+#: Depth
 CHUNK_SIZE_Z = 16
+
+#: Width
 CHUNK_SIZE_X = CHUNK_SIZE_Y * CHUNK_SIZE_Z
 
+#: Plot X axis
 LABEL_X = 'Layer'
+
+#: Plot Y axis
 LABEL_Y = 'Count'
 
 signal(SIGPIPE, SIG_DFL)
@@ -83,8 +93,12 @@ def lookup_block_type(block_type):
     """
     Find block types based on input string.
 
+    Looks for a hex value iff the block type is two hex digits. In other words,
+    if you specify `-b be` you'll get the block with hex value 'be', not
+    bedrock.
+
     @param block_type: Name or hex ID of a block type.
-    @return: Subset of BLOCK_TYPES.keys().
+    @return: Hex IDs of matching blocks.
     """
 
     if block_type is None or len(block_type) == 0:
