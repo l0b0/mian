@@ -71,6 +71,7 @@ BLOCK_TYPES = {
         'Note block',
         'Green cloth'],
     '\x1a': [
+        'Bed',
         'Aqua green cloth'],
     '\x1b': [
         'Cyan cloth'],
@@ -230,8 +231,10 @@ BLOCK_TYPES = {
         'Jack-o-lantern'],
     '\x5c': [
         'Cake block'],
-    '\x5d': [UNUSED_NAME],
-    '\x5e': [UNUSED_NAME],
+    '\x5d': [
+        'Redstone repeater [off]'],
+    '\x5e': [
+        'Redstone repeater [on]'],
     '\x5f': [UNUSED_NAME],
     '\x60': [UNUSED_NAME],
     '\x61': [UNUSED_NAME],
