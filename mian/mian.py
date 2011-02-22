@@ -37,7 +37,7 @@ Show a list of block types which can be searched for.
 
 __author__ = 'Pepijn de Vos, Victor Engmark'
 __copyright__ = 'Copyright (C) 2010-2011 Pepijn de Vos, Victor Engmark'
-__credits__ = ['Pepijn de Vos', 'Victor Engmark']
+__credits__ = ['Pepijn de Vos', 'Victor Engmark', 'Alejandro Aguilera']
 __maintainer__ = 'Victor Engmark'
 __email__ = 'victor.engmark@gmail.com'
 __license__ = 'GPL v3 or newer'
