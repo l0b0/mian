@@ -217,53 +217,9 @@ def mian(world_dir, block_type_hexes, nether):
     # <http://www.minecraftwiki.net/wiki/Beta_Level_Format>
     for mcr_file in mcr_files:
         print "Reading %s" % mcr_file
-
-        locations = []
-
-        file_pointer = open(mcr_file, 'rb')
-
-        # Locations sector
-        while file_pointer.tell() < SECTOR_BYTES:
-            location_raw = file_pointer.read(LOCATION_BYTES)
-            location = struct.unpack(
-                LOCATION_FORMAT,
-                LOCATION_PADDING + location_raw)
-            if location != (0, 0):
-                locations.append(location)
-
-        locations.sort()
-
-        #print "Found %d locations: %s" % (
-        #    len(locations),
-        #    str(locations))
         
-        region_blocks = ''
+        region_blocks = extract_region_blocks(mcr_file)
         
-        for offset, sector_count in locations:
-            file_pointer.seek(offset * SECTOR_BYTES)
-            chunk_length = struct.unpack(
-                UNSIGNED_LONG_FORMAT,
-                file_pointer.read(CHUNK_LENGTH_BYTES))[0]
-            chunk_compression = struct.unpack(
-                UNSIGNED_CHAR_FORMAT,
-                file_pointer.read(COMPRESSION_BYTES))[0]
-            chunk_raw = file_pointer.read(chunk_length)
-            chunk = decompress(chunk_raw, chunk_compression)
-            
-            #print
-            #print "Offset: %d" % offset
-            #print "Sector count: %d" % sector_count
-            #print "Binary chunk length: %d" % chunk_length
-            #print "Raw chunk length: %d" % (len(chunk_raw))
-            #print "Decompressed chunk length: %d" % len(chunk)
-            #print "Chunk compression method: %d" % chunk_compression
-            #print "Chunk start -- end: %s -- %s" % (chunk[0:30], chunk[-30:])
-
-            blocks_NBTtag = "Blocks"
-            index = chunk.find(blocks_NBTtag)
-            blocks = chunk[(index + len(blocks_NBTtag)):(index + len(blocks_NBTtag) + 32768)]
-            region_blocks += blocks
-
         # Count for this region file and go!
         for block_type_index in enumerate(block_type_hexes):
             for layer in range(128):
@@ -271,6 +227,7 @@ def mian(world_dir, block_type_hexes, nether):
                 counts[(block_type_index)][layer] = \
                 region_blocks[layer::128].count(block_type_index[1]) + old_number
         
+    # Are there blocks found?
     blocks_found = False
 
     for block_type_index in enumerate(block_type_hexes):
@@ -281,11 +238,66 @@ def mian(world_dir, block_type_hexes, nether):
     if blocks_found == False:
         raise Usage('No blocks were recognized.')
 
-    title += ' - mian ' + __version__
     print "Done!"
+    
     plot(counts, block_type_hexes, title)
 
+
+def extract_region_blocks(mcr_file):
+    """ This function create a string which contains
+    all blocks within the chunks in a given region file.
+    
+    Returns a string with all the chunk blocks in NBT format
+    inside a region file  concatenated. """
+    
+    locations = []
+
+    file_pointer = open(mcr_file, 'rb')
+
+    # Locations sector
+    while file_pointer.tell() < SECTOR_BYTES:
+        location_raw = file_pointer.read(LOCATION_BYTES)
+        location = struct.unpack(
+            LOCATION_FORMAT,
+            LOCATION_PADDING + location_raw)
+        if location != (0, 0):
+            locations.append(location)
+
+    locations.sort()
+
+    #print "Found %d locations: %s" % (
+    #    len(locations),
+    #    str(locations))
+    
+    region_blocks = ''
+    
+    for offset, sector_count in locations:
+        file_pointer.seek(offset * SECTOR_BYTES)
+        chunk_length = struct.unpack(
+            UNSIGNED_LONG_FORMAT,
+            file_pointer.read(CHUNK_LENGTH_BYTES))[0]
+        chunk_compression = struct.unpack(
+            UNSIGNED_CHAR_FORMAT,
+            file_pointer.read(COMPRESSION_BYTES))[0]
+        chunk_raw = file_pointer.read(chunk_length)
+        chunk = decompress(chunk_raw, chunk_compression)
         
+        #print
+        #print "Offset: %d" % offset
+        #print "Sector count: %d" % sector_count
+        #print "Binary chunk length: %d" % chunk_length
+        #print "Raw chunk length: %d" % (len(chunk_raw))
+        #print "Decompressed chunk length: %d" % len(chunk)
+        #print "Chunk compression method: %d" % chunk_compression
+        #print "Chunk start -- end: %s -- %s" % (chunk[0:30], chunk[-30:])
+
+        blocks_NBTtag = "Blocks"
+        index = chunk.find(blocks_NBTtag)
+        blocks = chunk[(index + len(blocks_NBTtag)):(index + len(blocks_NBTtag) + 32768)]
+        region_blocks += blocks
+        
+    return region_blocks
+
 
 def decompress(string, method):
     """
