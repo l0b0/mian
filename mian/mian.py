@@ -212,9 +212,12 @@ def mian(world_dir, block_type_hexes, nether):
         counts[(block_type_index)] = []
         for layer in range(128):
             counts[(block_type_index)].append(0)
-
+    
+    total_mcr_files = len (mcr_files)
+    file_counter = 1
+    
     for mcr_file in mcr_files:
-        print "Reading %s" % mcr_file
+        print "Reading {1:.>5} / {2}".format(mcr_file, file_counter, total_mcr_files)
         
         region_blocks = extract_region_blocks(mcr_file)
         
@@ -224,7 +227,7 @@ def mian(world_dir, block_type_hexes, nether):
                 old_number = counts[(block_type_index)][layer]
                 counts[(block_type_index)][layer] = \
                 region_blocks[layer::128].count(block_type_index[1]) + old_number
-        
+        file_counter += 1
     # Are there blocks found?
     blocks_found = False
 
