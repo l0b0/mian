@@ -47,13 +47,16 @@ __version__ = '0.8.7'
 from binascii import unhexlify
 from getopt import getopt, GetoptError
 from glob import glob
+from gzip import GzipFile
 import matplotlib.pyplot as plt
 from nbt.nbt import NBTFile
 from operator import itemgetter
 from os.path import join, split
 from signal import signal, SIGPIPE, SIG_DFL
+import struct
 import sys
 import warnings
+import zlib
 
 from blocks import BLOCK_TYPES, UNUSED_NAME
 
@@ -85,9 +88,33 @@ LABEL_X = 'Layer'
 #: Plot Y axis
 LABEL_Y = 'Count'
 
+#: <http://www.minecraftwiki.net/wiki/Beta_Level_Format#Structure>
+KIBIBYTE = 2**10
+UNSIGNED_LONG_BYTES = 4
+UNSIGNED_LONG_FORMAT = '>L'
+UNSIGNED_CHAR_BYTES = 1
+UNSIGNED_CHAR_FORMAT = '>B'
+SECTOR_BYTES = 4 * KIBIBYTE
+SECTOR_INTS = SECTOR_BYTES / UNSIGNED_LONG_BYTES
+
+#: <http://www.minecraftwiki.net/wiki/Beta_Level_Format#Chunk_Location>
+LOCATION_OFFSET_BYTES = 3
+SECTOR_COUNT_BYTES = 1
+LOCATION_BYTES = LOCATION_OFFSET_BYTES + SECTOR_COUNT_BYTES
+LOCATION_FORMAT = '>LB'
+LOCATION_PADDING = '\x00' * (struct.calcsize(LOCATION_FORMAT) - LOCATION_BYTES)
+
+#: <http://www.minecraftwiki.net/wiki/Beta_Level_Format#Chunk_Timestamps>
+TIMESTAMP_BYTES = UNSIGNED_LONG_BYTES
+
+#: <http://www.minecraftwiki.net/wiki/Beta_Level_Format#Chunk_Data>
+CHUNK_LENGTH_BYTES = UNSIGNED_LONG_BYTES
+COMPRESSION_BYTES = 1
+COMPRESSION_GZIP = 1
+COMPRESSION_DEFLATE = 2
+
 signal(SIGPIPE, SIG_DFL)
 """Avoid 'Broken pipe' message when canceling piped command."""
-
 
 def lookup_block_type(block_type):
     """
@@ -169,67 +196,72 @@ def mian(world_dir, block_type_hexes, nether):
 
     # All world blocks are stored in DAT files
     if nether:
-        paths = glob(join(world_dir, 'DIM-1/*/*/*.dat'))
+        mcr_files = glob(join(world_dir, 'DIM-1/region/*.mcr'))
         title += ' Nether'
     else:
-        paths = glob(join(world_dir, '*/*/*.dat'))
+        mcr_files = glob(join(world_dir, 'region/*.mcr'))
 
-    if paths == []:
+    if mcr_files == []:
         raise Usage('Invalid savegame path.')
 
-    print "There are %s chunks in the savegame directory" % len(paths)
-    print "Scanning chunks... \n",
+    print "There are %s regions in the savegame directory" % len(mcr_files)
 
     # Unpack block format
-    # <http://www.minecraftwiki.net/wiki/Alpha_Level_Format#Block_Format>
-    raw_blocks = ''
+    # <http://www.minecraftwiki.net/wiki/Beta_Level_Format>
+    for mcr_file in mcr_files:
+        print "Reading %s" % mcr_file
 
-    # Create counts dictionary and write a list of 128 zeros on it.
-    counts = {}
-    for block_type_index in enumerate(block_type_hexes):
-        counts[(block_type_index)] = []
-        for layer in range(128):
-            counts[(block_type_index)].append(0)
+        locations = []
 
-    # Used to print status
-    chunk_counter = 0
-    total_chunks = len(paths)
+        file_pointer = open(mcr_file, 'rb')
 
-    for path in paths:
-        nbtfile = NBTFile(path, 'rb')
+        # Locations sector
+        while file_pointer.tell() < SECTOR_BYTES:
+            location_raw = file_pointer.read(LOCATION_BYTES)
+            location = struct.unpack(
+                LOCATION_FORMAT,
+                LOCATION_PADDING + location_raw)
+            if location != (0, 0):
+                locations.append(location)
 
-        raw_blocks = nbtfile['Level']['Blocks'].value
+        locations.sort()
 
-        # Count for this chunk and add to the list
-        for block_type_index in enumerate(block_type_hexes):
-            for layer in range(128):
-                old_number = counts[(block_type_index)][layer]
-                counts[(block_type_index)][layer] = \
-                raw_blocks[layer::128].count(block_type_index[1]) + old_number
+        #print "Found %d locations: %s" % (
+        #    len(locations),
+        #    str(locations))
 
-        if 'close' in dir(nbtfile.file):
-            nbtfile.file.close()
+        for offset, sector_count in locations:
+            file_pointer.seek(offset * SECTOR_BYTES)
+            chunk_length = struct.unpack(
+                UNSIGNED_LONG_FORMAT,
+                file_pointer.read(CHUNK_LENGTH_BYTES))[0]
+            chunk_compression = struct.unpack(
+                UNSIGNED_CHAR_FORMAT,
+                file_pointer.read(COMPRESSION_BYTES))[0]
+            chunk_raw = file_pointer.read(chunk_length)
+            chunk = decompress(chunk_raw, chunk_compression)
 
-        # Print status
-        chunk_counter += 1
-        if chunk_counter > 0:
-            if chunk_counter % 1000 == 0 or 1000 % chunk_counter == 0:
-                print chunk_counter, "/", total_chunks
+            #print
+            #print "Offset: %d" % offset
+            #print "Sector count: %d" % sector_count
+            #print "Binary chunk length: %d" % chunk_length
+            #print "Raw chunk length: %d" % (len(chunk_raw))
+            #print "Decompressed chunk length: %d" % len(chunk)
+            #print "Chunk compression method: %d" % chunk_compression
+            #print "Chunk start -- end: %s -- %s" % (chunk[0:30], chunk[-30:])
 
-    blocks_found = False
 
-    for block_type_index in enumerate(block_type_hexes):
-        if counts[(block_type_index)] != [0] * 128:
-            blocks_found = True
-            break                         # there's at least one block found
+def decompress(string, method):
+    """
+    Decompress the given string with either of the 
+    """
+    assert(method in (COMPRESSION_GZIP, COMPRESSION_DEFLATE))
+    if method == COMPRESSION_GZIP:
+        with GzipFile(fileobj=StringIO.StringIO(string)) as gzip_file:
+            return gzip_file.read()
 
-    if blocks_found == False:
-        raise Usage('No blocks were recognized.')
-
-    title += ' - mian ' + __version__
-    print "Done!"
-    plot(counts, block_type_hexes, title)
-
+    if method == COMPRESSION_DEFLATE:
+        return zlib.decompress(string)
 
 class Usage(Exception):
     """Command-line usage error"""
