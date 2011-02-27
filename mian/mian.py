@@ -206,6 +206,13 @@ def mian(world_dir, block_type_hexes, nether):
 
     print "There are %s regions in the savegame directory" % len(mcr_files)
 
+    # Create counts dictionary and write a list of 128 zeros on it.
+    counts = {}
+    for block_type_index in enumerate(block_type_hexes):
+        counts[(block_type_index)] = []
+        for layer in range(128):
+            counts[(block_type_index)].append(0)
+
     # Unpack block format
     # <http://www.minecraftwiki.net/wiki/Beta_Level_Format>
     for mcr_file in mcr_files:
@@ -229,7 +236,9 @@ def mian(world_dir, block_type_hexes, nether):
         #print "Found %d locations: %s" % (
         #    len(locations),
         #    str(locations))
-
+        
+        region_blocks = ''
+        
         for offset, sector_count in locations:
             file_pointer.seek(offset * SECTOR_BYTES)
             chunk_length = struct.unpack(
@@ -240,7 +249,7 @@ def mian(world_dir, block_type_hexes, nether):
                 file_pointer.read(COMPRESSION_BYTES))[0]
             chunk_raw = file_pointer.read(chunk_length)
             chunk = decompress(chunk_raw, chunk_compression)
-
+            
             #print
             #print "Offset: %d" % offset
             #print "Sector count: %d" % sector_count
@@ -250,6 +259,33 @@ def mian(world_dir, block_type_hexes, nether):
             #print "Chunk compression method: %d" % chunk_compression
             #print "Chunk start -- end: %s -- %s" % (chunk[0:30], chunk[-30:])
 
+            blocks_NBTtag = "Blocks"
+            index = chunk.find(blocks_NBTtag)
+            blocks = chunk[(index + len(blocks_NBTtag)):(index + len(blocks_NBTtag) + 32768)]
+            region_blocks += blocks
+
+        # Count for this region file and go!
+        for block_type_index in enumerate(block_type_hexes):
+            for layer in range(128):
+                old_number = counts[(block_type_index)][layer]
+                counts[(block_type_index)][layer] = \
+                region_blocks[layer::128].count(block_type_index[1]) + old_number
+        
+    blocks_found = False
+
+    for block_type_index in enumerate(block_type_hexes):
+        if counts[(block_type_index)] != [0] * 128:
+            blocks_found = True
+            break # there's at least one block found
+
+    if blocks_found == False:
+        raise Usage('No blocks were recognized.')
+
+    title += ' - mian ' + __version__
+    print "Done!"
+    plot(counts, block_type_hexes, title)
+
+        
 
 def decompress(string, method):
     """
