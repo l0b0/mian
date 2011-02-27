@@ -213,8 +213,6 @@ def mian(world_dir, block_type_hexes, nether):
         for layer in range(128):
             counts[(block_type_index)].append(0)
 
-    # Unpack block format
-    # <http://www.minecraftwiki.net/wiki/Beta_Level_Format>
     for mcr_file in mcr_files:
         print "Reading %s" % mcr_file
         
@@ -244,11 +242,14 @@ def mian(world_dir, block_type_hexes, nether):
 
 
 def extract_region_blocks(mcr_file):
-    """ This function create a string which contains
+    """ This function creates a string which contains
     all blocks within the chunks in a given region file.
     
     Returns a string with all the chunk blocks in NBT format
     inside a region file  concatenated. """
+    
+    # Unpack block format
+    # <http://www.minecraftwiki.net/wiki/Beta_Level_Format>
     
     locations = []
 
