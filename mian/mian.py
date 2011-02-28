@@ -253,7 +253,7 @@ def count_blocks(region_blocks, block_type_hexes):
     of that block in that layer.
     """
 
-    layers = [region_blocks[i::128] for i in xrange(128)]
+    layers = [region_blocks[i::128] for i in range(128)]
     counts = [[] for i in xrange(len(block_type_hexes))]
 
     for block_type_index in range(len(block_type_hexes)):
