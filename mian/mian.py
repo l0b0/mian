@@ -53,6 +53,7 @@ from nbt.nbt import NBTFile
 from operator import itemgetter
 from os.path import join, split
 from signal import signal, SIGPIPE, SIG_DFL
+from StringIO import StringIO
 import struct
 import sys
 import warnings
@@ -316,7 +317,7 @@ def decompress(string, method):
 
     assert(method in (COMPRESSION_GZIP, COMPRESSION_DEFLATE))
     if method == COMPRESSION_GZIP:
-        with GzipFile(fileobj=StringIO.StringIO(string)) as gzip_file:
+        with GzipFile(fileobj=StringIO(string)) as gzip_file:
             return gzip_file.read()
 
     if method == COMPRESSION_DEFLATE:
