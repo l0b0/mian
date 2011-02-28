@@ -194,12 +194,7 @@ def mian(world_dir, block_type_hexes, nether):
     @param nether: Whether or not to graph The Nether.
     """
 
-    # If the world_dir ends with '/' doesn't toke an empty string
-    last_char = world_dir[len(world_dir) - 1]
-    if last_char == '/':
-        temp_world_dir = world_dir[0:len(world_dir) - 2]
-        title = split(temp_world_dir)[1]
-    else: title = split(world_dir)[1]
+    title = basename(world_dir.rstrip('/'))
 
     # All world blocks are stored in DAT files
     if nether:
