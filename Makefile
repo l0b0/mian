@@ -47,14 +47,11 @@ install:
 register:
 	$(SETUP) register
 
-dist: test
-	$(SETUP) sdist
-
 .PHONY: distclean
 distclean:
 	-$(RM) -r dist
 
 .PHONY: release
-release: dist register
-	$(SETUP) upload $(UPLOAD_OPTIONS)
-	$(TAG) -m 'PyPI release' $(RELEASE_TAG)
+release: test register
+	$(SETUP) sdist upload $(UPLOAD_OPTIONS)
+	$(GIT_TAG) -m 'PyPI release' $(RELEASE_TAG)
