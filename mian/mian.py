@@ -203,6 +203,8 @@ def mian(world_dir, block_type_hexes, nether):
     else:
         mcr_files = glob(join(world_dir, 'region/*.mcr'))
 
+    title += ' - mian %s' % __version__
+
     if mcr_files == []:
         raise Usage('Invalid savegame path.')
 
