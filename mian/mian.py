@@ -171,12 +171,12 @@ def plot(counts, block_type_hexes, title):
     """
     fig = plt.figure()
     fig.canvas.set_window_title(title)
-
-    for block_type_index in enumerate(block_type_hexes):
+    
+    for index, block_counts in enumerate(counts):
         plt.plot(
-            counts[(block_type_index)],
-            label=BLOCK_TYPES[block_type_index[1]][0],
-            linewidth=1)
+            block_counts,
+            label = BLOCK_TYPES[block_type_hexes[index]][0],
+            linewidth = 1)
 
     plt.legend()
     plt.xlabel(LABEL_X)
@@ -187,14 +187,19 @@ def plot(counts, block_type_hexes, title):
 
 def mian(world_dir, block_type_hexes, nether):
     """
-    Runs through the DAT files and gets the layer counts for the plot.
+    Runs through the MCR files and gets the layer counts for the plot.
 
     @param world_dir: Path to existing Minecraft world directory.
     @param block_type_hexes: Subset of BLOCK_TYPES.keys().
     @param nether: Whether or not to graph The Nether.
     """
 
-    title = split(world_dir)[1]
+    # If the world_dir ends with '/' doesn't toke an empty string
+    last_char = world_dir[len(world_dir) - 1]
+    if last_char == '/':
+        temp_world_dir = world_dir[0:len(world_dir) - 2]
+        title = split(temp_world_dir)[1]
+    else: title = split(world_dir)[1]
 
     # All world blocks are stored in DAT files
     if nether:
@@ -208,44 +213,56 @@ def mian(world_dir, block_type_hexes, nether):
 
     print "There are %s regions in the savegame directory" % len(mcr_files)
 
-    # Create counts dictionary and write a list of 128 zeros on it.
-    counts = {}
-    for block_type_index in enumerate(block_type_hexes):
-        counts[(block_type_index)] = []
+    # Create total_counts list and write a list of 128 zeros on it for
+    # every scanned block.
+    total_counts = [[] for i in xrange(len(block_type_hexes))]
+    for block_type_index in range(len(block_type_hexes)):
         for layer in range(128):
-            counts[(block_type_index)].append(0)
+            total_counts[block_type_index].append(int(0))
 
     total_mcr_files = len(mcr_files)
     file_counter = 1
 
     for mcr_file in mcr_files:
+
         print "Reading {1:.>5} / {2}". \
             format(mcr_file, file_counter, total_mcr_files)
 
         region_blocks = extract_region_blocks(mcr_file)
+        counts = count_blocks(region_blocks, block_type_hexes)
 
-        # Count for this region file and go!
-        for block_type_index in enumerate(block_type_hexes):
+        # Sum up the results
+        for block_type_index in range(len(block_type_hexes)):
             for layer in range(128):
-                old_number = counts[(block_type_index)][layer]
-                counts[(block_type_index)][layer] = \
-                region_blocks[layer::128]. \
-                    count(block_type_index[1]) + old_number
+                total_counts[block_type_index][layer] += counts[block_type_index][layer]
+
         file_counter += 1
-    # Are there blocks found?
-    blocks_found = False
 
-    for block_type_index in enumerate(block_type_hexes):
-        if counts[(block_type_index)] != [0] * 128:
-            blocks_found = True
-            break # there's at least one block found
-
-    if blocks_found == False:
+    if total_counts == [[] for i in xrange(len(block_type_hexes))]:
         raise Usage('No blocks were recognized.')
 
     print "Done!"
 
-    plot(counts, block_type_hexes, title)
+    plot(total_counts, block_type_hexes, title)
+
+
+def count_blocks(region_blocks,block_type_hexes):
+    """ This function counts blocks per layer.
+    
+    Returns a list with one element per scanned block.
+    Each element is a list with 128 elements the amount
+    of that block in that layer.
+    """
+
+    layers = [region_blocks[i::128] for i in xrange(128)]
+    counts = [[] for i in xrange(len(block_type_hexes))]
+
+    for block_type_index in range(len(block_type_hexes)):
+        bt_hex = block_type_hexes[block_type_index]
+        for layer in layers:
+            counts[block_type_index].append(layer.count(bt_hex))
+
+    return counts
 
 
 def extract_region_blocks(mcr_file):
@@ -299,6 +316,7 @@ def extract_region_blocks(mcr_file):
         #print "Chunk compression method: %d" % chunk_compression
         #print "Chunk start -- end: %s -- %s" % (chunk[0:30], chunk[-30:])
 
+        # Extract the blocks from the chunk
         blocks_NBTtag = "Blocks"
         index = chunk.find(blocks_NBTtag)
         blocks = chunk[(index + len(blocks_NBTtag)):(index + len(blocks_NBTtag) + 32768)]
