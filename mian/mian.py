@@ -47,13 +47,16 @@ __version__ = '0.8.7'
 from binascii import unhexlify
 from getopt import getopt, GetoptError
 from glob import glob
+from gzip import GzipFile
 import matplotlib.pyplot as plt
-from nbt.nbt import NBTFile
 from operator import itemgetter
-from os.path import join, split
+from os.path import basename, join
 from signal import signal, SIGPIPE, SIG_DFL
+from StringIO import StringIO
+import struct
 import sys
 import warnings
+import zlib
 
 from blocks import BLOCK_TYPES, UNUSED_NAME
 
@@ -85,11 +88,39 @@ LABEL_X = 'Layer'
 #: Plot Y axis
 LABEL_Y = 'Count'
 
+#: <http://www.minecraftwiki.net/wiki/Beta_Level_Format#Structure>
+KIBIBYTE = 2 ** 10
+UNSIGNED_LONG_BYTES = 4
+UNSIGNED_LONG_FORMAT = '>L'
+UNSIGNED_CHAR_BYTES = 1
+UNSIGNED_CHAR_FORMAT = '>B'
+SECTOR_BYTES = 4 * KIBIBYTE
+SECTOR_INTS = SECTOR_BYTES / UNSIGNED_LONG_BYTES
+
+#: <http://www.minecraftwiki.net/wiki/Beta_Level_Format#Chunk_Location>
+LOCATION_OFFSET_BYTES = 3
+SECTOR_COUNT_BYTES = 1
+LOCATION_BYTES = LOCATION_OFFSET_BYTES + SECTOR_COUNT_BYTES
+LOCATION_FORMAT = '>LB'
+LOCATION_PADDING = '\x00' * (struct.calcsize(LOCATION_FORMAT) - LOCATION_BYTES)
+
+#: <http://www.minecraftwiki.net/wiki/Beta_Level_Format#Chunk_Timestamps>
+TIMESTAMP_BYTES = UNSIGNED_LONG_BYTES
+
+#: <http://www.minecraftwiki.net/wiki/Beta_Level_Format#Chunk_Data>
+CHUNK_LENGTH_BYTES = UNSIGNED_LONG_BYTES
+COMPRESSION_BYTES = 1
+COMPRESSION_GZIP = 1
+COMPRESSION_DEFLATE = 2
+
+BLOCKS_NBT_TAG = "Blocks"
+
+#: Avoid 'Broken pipe' message when canceling piped command
 signal(SIGPIPE, SIG_DFL)
-"""Avoid 'Broken pipe' message when canceling piped command."""
 
 
 def lookup_block_type(block_type):
+
     """
     Find block types based on input string.
 
@@ -143,10 +174,10 @@ def plot(counts, block_type_hexes, title):
     fig = plt.figure()
     fig.canvas.set_window_title(title)
 
-    for block_type_index in enumerate(block_type_hexes):
+    for index, block_counts in enumerate(counts):
         plt.plot(
-            counts[(block_type_index)],
-            label=BLOCK_TYPES[block_type_index[1]][0],
+            block_counts,
+            label=BLOCK_TYPES[block_type_hexes[index]][0],
             linewidth=1)
 
     plt.legend()
@@ -158,81 +189,145 @@ def plot(counts, block_type_hexes, title):
 
 def mian(world_dir, block_type_hexes, nether):
     """
-    Runs through the DAT files and gets the layer counts for the plot.
+    Runs through the MCR files and gets the layer counts for the plot.
 
     @param world_dir: Path to existing Minecraft world directory.
     @param block_type_hexes: Subset of BLOCK_TYPES.keys().
     @param nether: Whether or not to graph The Nether.
     """
 
-    title = split(world_dir)[1]
+    title = basename(world_dir.rstrip('/'))
 
     # All world blocks are stored in DAT files
     if nether:
-        paths = glob(join(world_dir, 'DIM-1/*/*/*.dat'))
+        mcr_files = glob(join(world_dir, 'DIM-1/region/*.mcr'))
         title += ' Nether'
     else:
-        paths = glob(join(world_dir, '*/*/*.dat'))
+        mcr_files = glob(join(world_dir, 'region/*.mcr'))
 
-    if paths == []:
+    title += ' - mian %s' % __version__
+
+    if mcr_files == []:
         raise Usage('Invalid savegame path.')
 
-    print "There are %s chunks in the savegame directory" % len(paths)
-    print "Scanning chunks... \n",
+    print "There are %s regions in the savegame directory" % len(mcr_files)
 
-    # Unpack block format
-    # <http://www.minecraftwiki.net/wiki/Alpha_Level_Format#Block_Format>
-    raw_blocks = ''
-
-    # Create counts dictionary and write a list of 128 zeros on it.
-    counts = {}
-    for block_type_index in enumerate(block_type_hexes):
-        counts[(block_type_index)] = []
+    # Create total_counts list and write a list of 128 zeros on it for
+    # every scanned block.
+    total_counts = [[] for i in xrange(len(block_type_hexes))]
+    for block_type_index in range(len(block_type_hexes)):
         for layer in range(128):
-            counts[(block_type_index)].append(0)
+            total_counts[block_type_index].append(int(0))
 
-    # Used to print status
-    chunk_counter = 0
-    total_chunks = len(paths)
+    total_mcr_files = len(mcr_files)
+    file_counter = 1
 
-    for path in paths:
-        nbtfile = NBTFile(path, 'rb')
+    for mcr_file in mcr_files:
 
-        raw_blocks = nbtfile['Level']['Blocks'].value
+        print "Reading %# 5u / %u" % (file_counter, total_mcr_files)
 
-        # Count for this chunk and add to the list
-        for block_type_index in enumerate(block_type_hexes):
+        region_blocks = extract_region_blocks(mcr_file)
+        counts = count_blocks(region_blocks, block_type_hexes)
+
+        # Sum up the results
+        for block_type_index in range(len(block_type_hexes)):
             for layer in range(128):
-                old_number = counts[(block_type_index)][layer]
-                counts[(block_type_index)][layer] = \
-                raw_blocks[layer::128].count(block_type_index[1]) + old_number
+                total_counts[block_type_index][layer] += \
+                    counts[block_type_index][layer]
 
-        if 'close' in dir(nbtfile.file):
-            nbtfile.file.close()
+        file_counter += 1
 
-        # Print status
-        chunk_counter += 1
-        if chunk_counter > 0:
-            if chunk_counter % 1000 == 0 or 1000 % chunk_counter == 0:
-                print chunk_counter, "/", total_chunks
-
-    blocks_found = False
-
-    for block_type_index in enumerate(block_type_hexes):
-        if counts[(block_type_index)] != [0] * 128:
-            blocks_found = True
-            break                         # there's at least one block found
-
-    if blocks_found == False:
+    if total_counts == [[] for i in xrange(len(block_type_hexes))]:
         raise Usage('No blocks were recognized.')
 
-    title += ' - mian ' + __version__
     print "Done!"
-    plot(counts, block_type_hexes, title)
+
+    plot(total_counts, block_type_hexes, title)
+
+
+def count_blocks(region_blocks, block_type_hexes):
+    """ This function counts blocks per layer.
+
+    Returns a list with one element per scanned block.
+    Each element is a list with 128 elements the amount
+    of that block in that layer.
+    """
+
+    layers = [region_blocks[i::128] for i in range(128)]
+    counts = [[] for i in xrange(len(block_type_hexes))]
+
+    for block_type_index in range(len(block_type_hexes)):
+        bt_hex = block_type_hexes[block_type_index]
+        for layer in layers:
+            counts[block_type_index].append(layer.count(bt_hex))
+
+    return counts
+
+
+def extract_region_blocks(mcr_file):
+    """ This function creates a string which contains
+    all blocks within the chunks in a given region file.
+
+    Returns a string with all the chunk blocks in NBT format
+    inside a region file concatenated. """
+
+    # Unpack block format
+    # <http://www.minecraftwiki.net/wiki/Beta_Level_Format>
+
+    locations = []
+
+    file_pointer = open(mcr_file, 'rb')
+
+    # Locations sector
+    while file_pointer.tell() < SECTOR_BYTES:
+        location_raw = file_pointer.read(LOCATION_BYTES)
+        location = struct.unpack(
+            LOCATION_FORMAT,
+            LOCATION_PADDING + location_raw)[0]
+        if location != 0:
+            locations.append(location)
+
+    locations.sort()
+
+    region_blocks = ''
+
+    for offset in locations:
+        file_pointer.seek(offset * SECTOR_BYTES)
+        chunk_length = struct.unpack(
+            UNSIGNED_LONG_FORMAT,
+            file_pointer.read(CHUNK_LENGTH_BYTES))[0]
+        chunk_compression = struct.unpack(
+            UNSIGNED_CHAR_FORMAT,
+            file_pointer.read(COMPRESSION_BYTES))[0]
+        chunk_raw = file_pointer.read(chunk_length)
+        chunk = decompress(chunk_raw, chunk_compression)
+
+        # Extract the blocks from the chunk
+        index = chunk.find(BLOCKS_NBT_TAG)
+        blocks = chunk[
+            (index + len(BLOCKS_NBT_TAG)):(index + len(BLOCKS_NBT_TAG) + 32768)]
+        region_blocks += blocks
+
+    return region_blocks
+
+
+def decompress(string, method):
+    """
+    Decompress the given string with either of the
+    """
+
+    assert(method in (COMPRESSION_GZIP, COMPRESSION_DEFLATE))
+    if method == COMPRESSION_GZIP:
+        with GzipFile(fileobj=StringIO(string)) as gzip_file:
+            return gzip_file.read()
+
+    if method == COMPRESSION_DEFLATE:
+        return zlib.decompress(string)
 
 
 class Usage(Exception):
     """Command-line usage error"""
+
     def __init__(self, msg):
         super(Usage, self).__init__(msg)
         self.msg = msg + '\nSee --help for more information.'
