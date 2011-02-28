@@ -49,9 +49,8 @@ from getopt import getopt, GetoptError
 from glob import glob
 from gzip import GzipFile
 import matplotlib.pyplot as plt
-from nbt.nbt import NBTFile
 from operator import itemgetter
-from os.path import join, split
+from os.path import basename, join
 from signal import signal, SIGPIPE, SIG_DFL
 from StringIO import StringIO
 import struct
@@ -90,7 +89,7 @@ LABEL_X = 'Layer'
 LABEL_Y = 'Count'
 
 #: <http://www.minecraftwiki.net/wiki/Beta_Level_Format#Structure>
-KIBIBYTE = 2**10
+KIBIBYTE = 2 ** 10
 UNSIGNED_LONG_BYTES = 4
 UNSIGNED_LONG_FORMAT = '>L'
 UNSIGNED_CHAR_BYTES = 1
@@ -114,8 +113,10 @@ COMPRESSION_BYTES = 1
 COMPRESSION_GZIP = 1
 COMPRESSION_DEFLATE = 2
 
+BLOCKS_NBT_TAG = "Blocks"
+
+#: Avoid 'Broken pipe' message when canceling piped command
 signal(SIGPIPE, SIG_DFL)
-"""Avoid 'Broken pipe' message when canceling piped command."""
 
 
 def lookup_block_type(block_type):
@@ -172,12 +173,12 @@ def plot(counts, block_type_hexes, title):
     """
     fig = plt.figure()
     fig.canvas.set_window_title(title)
-    
+
     for index, block_counts in enumerate(counts):
         plt.plot(
             block_counts,
-            label = BLOCK_TYPES[block_type_hexes[index]][0],
-            linewidth = 1)
+            label=BLOCK_TYPES[block_type_hexes[index]][0],
+            linewidth=1)
 
     plt.legend()
     plt.xlabel(LABEL_X)
@@ -232,7 +233,8 @@ def mian(world_dir, block_type_hexes, nether):
         # Sum up the results
         for block_type_index in range(len(block_type_hexes)):
             for layer in range(128):
-                total_counts[block_type_index][layer] += counts[block_type_index][layer]
+                total_counts[block_type_index][layer] += \
+                    counts[block_type_index][layer]
 
         file_counter += 1
 
@@ -244,9 +246,9 @@ def mian(world_dir, block_type_hexes, nether):
     plot(total_counts, block_type_hexes, title)
 
 
-def count_blocks(region_blocks,block_type_hexes):
+def count_blocks(region_blocks, block_type_hexes):
     """ This function counts blocks per layer.
-    
+
     Returns a list with one element per scanned block.
     Each element is a list with 128 elements the amount
     of that block in that layer.
@@ -282,15 +284,15 @@ def extract_region_blocks(mcr_file):
         location_raw = file_pointer.read(LOCATION_BYTES)
         location = struct.unpack(
             LOCATION_FORMAT,
-            LOCATION_PADDING + location_raw)
-        if location != (0, 0):
+            LOCATION_PADDING + location_raw)[0]
+        if location != 0:
             locations.append(location)
 
     locations.sort()
 
     region_blocks = ''
 
-    for offset, sector_count in locations:
+    for offset in locations:
         file_pointer.seek(offset * SECTOR_BYTES)
         chunk_length = struct.unpack(
             UNSIGNED_LONG_FORMAT,
@@ -302,9 +304,9 @@ def extract_region_blocks(mcr_file):
         chunk = decompress(chunk_raw, chunk_compression)
 
         # Extract the blocks from the chunk
-        blocks_NBTtag = "Blocks"
-        index = chunk.find(blocks_NBTtag)
-        blocks = chunk[(index + len(blocks_NBTtag)):(index + len(blocks_NBTtag) + 32768)]
+        index = chunk.find(BLOCKS_NBT_TAG)
+        blocks = chunk[
+            (index + len(BLOCKS_NBT_TAG)):(index + len(BLOCKS_NBT_TAG) + 32768)]
         region_blocks += blocks
 
     return region_blocks
