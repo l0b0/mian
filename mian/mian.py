@@ -224,8 +224,7 @@ def mian(world_dir, block_type_hexes, nether):
 
     for mcr_file in mcr_files:
 
-        print "Reading {1:.>5} / {2}". \
-            format(mcr_file, file_counter, total_mcr_files)
+        print "Reading %# 5u / %u" % (file_counter, total_mcr_files)
 
         region_blocks = extract_region_blocks(mcr_file)
         counts = count_blocks(region_blocks, block_type_hexes)
