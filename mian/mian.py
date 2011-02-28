@@ -116,7 +116,9 @@ COMPRESSION_DEFLATE = 2
 signal(SIGPIPE, SIG_DFL)
 """Avoid 'Broken pipe' message when canceling piped command."""
 
+
 def lookup_block_type(block_type):
+
     """
     Find block types based on input string.
 
@@ -212,21 +214,23 @@ def mian(world_dir, block_type_hexes, nether):
         counts[(block_type_index)] = []
         for layer in range(128):
             counts[(block_type_index)].append(0)
-    
-    total_mcr_files = len (mcr_files)
+
+    total_mcr_files = len(mcr_files)
     file_counter = 1
-    
+
     for mcr_file in mcr_files:
-        print "Reading {1:.>5} / {2}".format(mcr_file, file_counter, total_mcr_files)
-        
+        print "Reading {1:.>5} / {2}". \
+            format(mcr_file, file_counter, total_mcr_files)
+
         region_blocks = extract_region_blocks(mcr_file)
-        
+
         # Count for this region file and go!
         for block_type_index in enumerate(block_type_hexes):
             for layer in range(128):
                 old_number = counts[(block_type_index)][layer]
                 counts[(block_type_index)][layer] = \
-                region_blocks[layer::128].count(block_type_index[1]) + old_number
+                region_blocks[layer::128]. \
+                    count(block_type_index[1]) + old_number
         file_counter += 1
     # Are there blocks found?
     blocks_found = False
@@ -240,20 +244,20 @@ def mian(world_dir, block_type_hexes, nether):
         raise Usage('No blocks were recognized.')
 
     print "Done!"
-    
+
     plot(counts, block_type_hexes, title)
 
 
 def extract_region_blocks(mcr_file):
     """ This function creates a string which contains
     all blocks within the chunks in a given region file.
-    
+
     Returns a string with all the chunk blocks in NBT format
-    inside a region file  concatenated. """
-    
+    inside a region file concatenated. """
+
     # Unpack block format
     # <http://www.minecraftwiki.net/wiki/Beta_Level_Format>
-    
+
     locations = []
 
     file_pointer = open(mcr_file, 'rb')
@@ -272,9 +276,9 @@ def extract_region_blocks(mcr_file):
     #print "Found %d locations: %s" % (
     #    len(locations),
     #    str(locations))
-    
+
     region_blocks = ''
-    
+
     for offset, sector_count in locations:
         file_pointer.seek(offset * SECTOR_BYTES)
         chunk_length = struct.unpack(
@@ -285,7 +289,7 @@ def extract_region_blocks(mcr_file):
             file_pointer.read(COMPRESSION_BYTES))[0]
         chunk_raw = file_pointer.read(chunk_length)
         chunk = decompress(chunk_raw, chunk_compression)
-        
+
         #print
         #print "Offset: %d" % offset
         #print "Sector count: %d" % sector_count
@@ -299,14 +303,15 @@ def extract_region_blocks(mcr_file):
         index = chunk.find(blocks_NBTtag)
         blocks = chunk[(index + len(blocks_NBTtag)):(index + len(blocks_NBTtag) + 32768)]
         region_blocks += blocks
-        
+
     return region_blocks
 
 
 def decompress(string, method):
     """
-    Decompress the given string with either of the 
+    Decompress the given string with either of the
     """
+
     assert(method in (COMPRESSION_GZIP, COMPRESSION_DEFLATE))
     if method == COMPRESSION_GZIP:
         with GzipFile(fileobj=StringIO.StringIO(string)) as gzip_file:
@@ -315,8 +320,10 @@ def decompress(string, method):
     if method == COMPRESSION_DEFLATE:
         return zlib.decompress(string)
 
+
 class Usage(Exception):
     """Command-line usage error"""
+
     def __init__(self, msg):
         super(Usage, self).__init__(msg)
         self.msg = msg + '\nSee --help for more information.'
