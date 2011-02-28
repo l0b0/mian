@@ -287,10 +287,6 @@ def extract_region_blocks(mcr_file):
 
     locations.sort()
 
-    #print "Found %d locations: %s" % (
-    #    len(locations),
-    #    str(locations))
-
     region_blocks = ''
 
     for offset, sector_count in locations:
@@ -303,15 +299,6 @@ def extract_region_blocks(mcr_file):
             file_pointer.read(COMPRESSION_BYTES))[0]
         chunk_raw = file_pointer.read(chunk_length)
         chunk = decompress(chunk_raw, chunk_compression)
-
-        #print
-        #print "Offset: %d" % offset
-        #print "Sector count: %d" % sector_count
-        #print "Binary chunk length: %d" % chunk_length
-        #print "Raw chunk length: %d" % (len(chunk_raw))
-        #print "Decompressed chunk length: %d" % len(chunk)
-        #print "Chunk compression method: %d" % chunk_compression
-        #print "Chunk start -- end: %s -- %s" % (chunk[0:30], chunk[-30:])
 
         # Extract the blocks from the chunk
         blocks_NBTtag = "Blocks"
