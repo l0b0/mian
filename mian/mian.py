@@ -190,6 +190,7 @@ def plot(counts, block_type_hexes, title, log, interactive):
                 label=BLOCK_TYPES[block_type_hexes[index]][0],
                 linewidth=1)
 
+
     plt.legend()
     plt.xlabel(LABEL_X)
     plt.ylabel(LABEL_Y)
