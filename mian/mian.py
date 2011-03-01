@@ -15,6 +15,7 @@ Options:
                 <http://www.minecraftwiki.net/wiki/Data_values>).
 -n, --nether    Graph The Nether instead of the ordinary world.
 --log           Render logarithmic output.
+-s, --save      Save the result to file instead of showing an interactive GUI.
 
 Description:
 
