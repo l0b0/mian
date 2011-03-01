@@ -53,5 +53,5 @@ distclean:
 
 .PHONY: release
 release: test register
-	$(SETUP) sdist upload $(UPLOAD_OPTIONS)
+	$(SETUP) sdist bdist_egg upload $(UPLOAD_OPTIONS)
 	$(GIT_TAG) -m 'PyPI release' $(RELEASE_TAG)

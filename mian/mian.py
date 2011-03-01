@@ -42,7 +42,7 @@ __maintainer__ = 'Victor Engmark'
 __email__ = 'victor.engmark@gmail.com'
 __license__ = 'GPL v3 or newer'
 __url__ = 'https://github.com/l0b0/mian/wiki'
-__version__ = '0.9'
+__version__ = '0.9.1'
 
 from binascii import unhexlify
 from getopt import getopt, GetoptError
@@ -164,7 +164,7 @@ def print_block_types():
             sys.stdout.write(', '.join(block_names) + '\n')
 
 
-def plot(counts, block_type_hexes, title):
+def plot(counts, block_type_hexes, title, interactive):
     """
     Actual plotting of data.
 
@@ -184,10 +184,13 @@ def plot(counts, block_type_hexes, title):
     plt.xlabel(LABEL_X)
     plt.ylabel(LABEL_Y)
 
-    plt.show()
+    if interactive:
+        plt.show()
+    else:
+        plt.savefig(title + '.png')
 
 
-def mian(world_dir, block_type_hexes, nether):
+def mian(world_dir, block_type_hexes, nether, interactive):
     """
     Runs through the MCR files and gets the layer counts for the plot.
 
@@ -242,7 +245,7 @@ def mian(world_dir, block_type_hexes, nether):
 
     print "Done!"
 
-    plot(total_counts, block_type_hexes, title)
+    plot(total_counts, block_type_hexes, title, interactive)
 
 
 def count_blocks(region_blocks, block_type_hexes):
@@ -342,13 +345,14 @@ def main(argv=None):
     # Defaults
     block_type_names = DEFAULT_BLOCK_TYPES
     nether = False
+    interactive = True
 
     try:
         try:
             opts, args = getopt(
                 argv[1:],
-                'b:lnh',
-                ['blocks=', 'list', 'nether', 'help'])
+                'b:lnhs',
+                ['blocks=', 'list', 'nether', 'save', 'help'])
         except GetoptError, err:
             raise Usage(str(err))
 
@@ -357,6 +361,8 @@ def main(argv=None):
                 block_type_names = value.split(',')
             elif option in ('-n', '--nether'):
                 nether = True
+            elif option in ('-s', '--save'):
+                interactive = False
             elif option in ('-l', '--list'):
                 print_block_types()
                 return 0
@@ -382,7 +388,7 @@ def main(argv=None):
                 if found_hex not in block_type_hexes:  # Avoid duplicates
                     block_type_hexes.append(found_hex)
 
-        mian(world_dir, block_type_hexes, nether)
+        mian(world_dir, block_type_hexes, nether, interactive)
 
     except Usage, err:
         sys.stderr.write(err.msg + '\n')
