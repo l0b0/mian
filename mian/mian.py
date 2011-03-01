@@ -15,7 +15,10 @@ Options:
                 <http://www.minecraftwiki.net/wiki/Data_values>).
 -n, --nether    Graph The Nether instead of the ordinary world.
 --log           Render logarithmic output.
+<<<<<<< HEAD
 -s, --save      Save the result to file instead of showing an interactive GUI.
+=======
+>>>>>>> added --log option
 
 Description:
 
@@ -189,7 +192,6 @@ def plot(counts, block_type_hexes, title, log, interactive):
                 block_counts,
                 label=BLOCK_TYPES[block_type_hexes[index]][0],
                 linewidth=1)
-
 
     plt.legend()
     plt.xlabel(LABEL_X)
