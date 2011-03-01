@@ -185,13 +185,27 @@ def plot(counts, block_type_hexes, title, log, interactive):
                 block_counts,
                 label=BLOCK_TYPES[block_type_hexes[index]][0],
                 linewidth=1,
-                nonposy='clip')
+                nonposy='clip',
+                picker=10)
     else:
         for index, block_counts in enumerate(counts):
             plt.plot(
                 block_counts,
                 label=BLOCK_TYPES[block_type_hexes[index]][0],
-                linewidth=1)
+                linewidth=1,
+                picker=10)
+
+    def on_pick(pickevent):
+        thisline = pickevent.artist
+        print "Toggeling", thisline.get_label()
+        if thisline.get_alpha() == None:
+            thisline.set_alpha(0.3)
+        else:
+            thisline.set_alpha(None)
+
+        fig.canvas.draw()
+        
+    fig.canvas.mpl_connect('pick_event', on_pick)
 
     plt.legend()
     plt.xlabel(LABEL_X)
