@@ -198,10 +198,10 @@ def plot(counts, block_type_hexes, title, log, interactive):
     def on_pick(pickevent):
         thisline = pickevent.artist
         print "Toggeling", thisline.get_label()
-        if thisline.get_alpha() == None:
+        if thisline.get_alpha() == None or thisline.get_alpha() == 1:
             thisline.set_alpha(0.3)
         else:
-            thisline.set_alpha(None)
+            thisline.set_alpha(1)
 
         fig.canvas.draw()
         
