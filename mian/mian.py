@@ -318,7 +318,8 @@ def extract_region_blocks(mcr_file):
         # Extract the blocks from the chunk
         index = chunk.find(BLOCKS_NBT_TAG)
         blocks = chunk[
-            (index + len(BLOCKS_NBT_TAG)):(index + len(BLOCKS_NBT_TAG) + 32768)]
+            (index + len(BLOCKS_NBT_TAG) + 4):(index + len(BLOCKS_NBT_TAG) + 4 + 32768)]
+            # after the NBT tag there is always for bytes with \x00 \x00 \x80 \x00, ignore them!
         region_blocks += blocks
 
     return region_blocks
