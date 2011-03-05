@@ -59,6 +59,7 @@ import struct
 import sys
 import warnings
 import zlib
+from optparse import OptionParser
 
 from blocks import BLOCK_TYPES, UNUSED_NAME
 
@@ -166,7 +167,7 @@ def print_block_types():
             sys.stdout.write(', '.join(block_names) + '\n')
 
 
-def plot(counts, block_type_hexes, title, log, interactive):
+def plot(counts, block_type_hexes, title, log, save_path, dpi):
     """
     Actual plotting of data.
 
@@ -194,13 +195,14 @@ def plot(counts, block_type_hexes, title, log, interactive):
     plt.xlabel(LABEL_X)
     plt.ylabel(LABEL_Y)
 
-    if interactive:
+    if save_path == None:
         plt.show()
     else:
-        plt.savefig(title + '.png')
+        print 'Saving image to: %s' % save_path
+        plt.savefig(save_path, dpi = dpi)
 
 
-def mian(world_dir, block_type_hexes, nether, log, interactive):
+def mian(world_dir, block_type_hexes, nether, log, save_path, dpi):
     """
     Runs through the MCR files and gets the layer counts for the plot.
 
@@ -255,7 +257,7 @@ def mian(world_dir, block_type_hexes, nether, log, interactive):
 
     print "Done!"
 
-    plot(total_counts, block_type_hexes, title, log, interactive)
+    plot(total_counts, block_type_hexes, title, log, save_path, dpi)
 
 
 def count_blocks(region_blocks, block_type_hexes):
@@ -345,67 +347,64 @@ class Usage(Exception):
         super(Usage, self).__init__(msg)
         self.msg = msg + '\nSee --help for more information.'
 
-
 def main(argv=None):
     """Argument handling."""
 
-    if argv is None:
-        argv = sys.argv
+    # things for --help and --version options
+    prog = 'mian'
+    description = 'mian: Mine analysis - Graph block types to altitude in a Minecraft save game <http://github.com/l0b0/mian>'
+    usage = 'usage: %prog [-b|--blocks=<list>] [-l|--list] <World directory>'
+    version = '0.9.2'
 
-    # Defaults
-    block_type_names = DEFAULT_BLOCK_TYPES
-    nether = False
-    interactive = True
-    log = False
+    # populating the parser
+    parser = OptionParser(usage = usage, version = version, description = description, prog = prog)
 
-    try:
-        try:
-            opts, args = getopt(
-                argv[1:],
-                'b:lnhs',
-                ['blocks=', 'list', 'nether', 'log', 'save', 'help'])
-        except GetoptError, err:
-            raise Usage(str(err))
+    parser.add_option("-b", "--blocks", dest="block_type_names", default = None, 
+        help="Specify block types to include as a comma-separated list, using either the block types or hex values from the list.")
+    parser.add_option("-l", "--list", action = "store_true", dest = "print_blocks",
+        help = "List available block types and their names (from <http://www.minecraftwiki.net/wiki/Data_values>)")
+    parser.add_option("-n", "--nether", action = "store_true", default = False, dest = "nether",
+        help = "Graph The Nether instead of the ordinary world.")
+    parser.add_option("--log", action = "store_true", default = False, dest = "log",
+        help = "Render logarithmic output.")
+    parser.add_option("-o", "--output", default = None, dest = "save_path",
+        help = "Save the result to file instead of showing an interactive GUI.")
+    parser.add_option("--dpi",type = 'int', default = 100, dest = "dpi",
+        help = "The resolution in dots per inch for the --output option. Default = 100 (800x600).")
 
-        for option, value in opts:
-            if option in ('-b', '--blocks'):
-                block_type_names = value.split(',')
-            elif option in ('-n', '--nether'):
-                nether = True
-            elif option in ('--log'):
-                log = True
-            elif option in ('-s', '--save'):
-                interactive = False
-            elif option in ('-l', '--list'):
-                print_block_types()
-                return 0
-            elif option in ('-h', '--help'):
-                print __doc__
-                return 0
-            else:
-                raise Usage('Unhandled option %s.' % option)
+    (options, args) = parser.parse_args()
 
-        if len(args) == 0:
-            raise Usage('You need to specify a save directory.')
+    # print block types if asked for
+    if options.print_blocks:
+        print_block_types()
+        return 0
 
-        if len(args) != 1:
-            raise Usage('You need to specify exactly one save directory.')
+    # check things
+    if len(args) == 0:
+        parser.error('need to specify a save directory')
 
-        world_dir = args[0]
+    if len(args) != 1:
+        parser.error('need to specify exactly one save directory')
 
-        # Look up block_types
-        block_type_hexes = []
-        for block_type_name in block_type_names:
-            found_hexes = lookup_block_type(block_type_name)
-            for found_hex in found_hexes:
-                if found_hex not in block_type_hexes:  # Avoid duplicates
-                    block_type_hexes.append(found_hex)
+    if not options.dpi > 0:
+        parser.error('dpi should be an interger greater than 0, given \'%s\'' % options.dpi)
 
-        mian(world_dir, block_type_hexes, nether, log, interactive)
+    world_dir = args[0]
 
-    except Usage, err:
-        sys.stderr.write(err.msg + '\n')
-        return 2
+    # Look up block_types
+    if options.block_type_names == None:
+        block_type_names = DEFAULT_BLOCK_TYPES
+    else:
+        block_type_names = options.block_type_names.split(',')
+        
+    block_type_hexes = []
+    for block_type_name in block_type_names:
+        found_hexes = lookup_block_type(block_type_name)
+        for found_hex in found_hexes:
+            if found_hex not in block_type_hexes:  # Avoid duplicates
+                block_type_hexes.append(found_hex)
+
+    mian(world_dir, block_type_hexes, options.nether, options.log, options.save_path, options.dpi)
 
 
 if __name__ == '__main__':
