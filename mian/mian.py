@@ -50,7 +50,7 @@ from binascii import unhexlify
 from getopt import getopt, GetoptError
 from glob import glob
 from gzip import GzipFile
-import matplotlib.pyplot as plt
+import matplotlib as mpl
 from operator import itemgetter
 from os.path import basename, join
 from signal import signal, SIGPIPE, SIG_DFL
@@ -173,6 +173,11 @@ def plot(counts, block_type_hexes, title, log, interactive):
     @param counts: Integer counts per layer.
     @param block_type_hexes: Subset of BLOCK_TYPES.keys().
     """
+    if not interactive:
+        mpl.use('Agg')
+    
+    import matplotlib.pyplot as plt
+    
     fig = plt.figure()
     fig.canvas.set_window_title(title)
 
