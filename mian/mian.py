@@ -174,7 +174,7 @@ def plot(counts, block_type_hexes, title, log, save_path, dpi):
     @param counts: Integer counts per layer.
     @param block_type_hexes: Subset of BLOCK_TYPES.keys().
     """
-    if not interactive:
+    if save_path:
         mpl.use('Agg')
     
     import matplotlib.pyplot as plt
