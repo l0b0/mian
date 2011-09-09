@@ -233,7 +233,7 @@ def mian(world_dir, block_type_hexes, options):
     o = options
     title = basename(world_dir.rstrip('/'))
 
-    # All world blocks are stored in DAT files
+    # All world blocks are stored in .mcr files
     if o.nether:
         mcr_files = glob(join(world_dir, 'DIM-1/region/*.mcr'))
         title += ' Nether'
@@ -244,6 +244,12 @@ def mian(world_dir, block_type_hexes, options):
 
     if not mcr_files:
         raise Usage('Invalid savegame path.')
+
+    total_counts = generate_graph_data(mcr_files, block_type_hexes)
+
+    plot(total_counts, block_type_hexes, title, o.log, o.save_path, o.dpi)
+
+def generate_graph_data(mcr_files, block_type_hexes, plot_mode = 'normal'):
 
     print "There are %s regions in the savegame directory" % len(mcr_files)
 
@@ -276,8 +282,9 @@ def mian(world_dir, block_type_hexes, options):
         raise Usage('No blocks were recognized.')
 
     print "Done!"
+    
+    return total_counts
 
-    plot(total_counts, block_type_hexes, title, o.log, o.save_path, o.dpi)
 
 
 def count_blocks(region_blocks, block_type_hexes):
