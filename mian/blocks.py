@@ -74,26 +74,26 @@ BLOCK_TYPES = {
         'Bed',
         'Aqua green cloth'],
     '\x1b': [
-        'Cyan cloth'],
+        'Powered rail'],
     '\x1c': [
-        'Blue cloth'],
+        'Detector rail'],
     '\x1d': [
-        'Purple cloth'],
+        'Sticky Piston'],
     '\x1e': [
-        'Indigo cloth'],
+        'Cobweb'],
     '\x1f': [
-        'Violet cloth'],
+        'Tall grass'],
     '\x20': [
-        'Magenta cloth'],
+        'Dead Shrubs'],
     '\x21': [
-        'Pink cloth'],
+        'Piston'],
     '\x22': [
-        'Black cloth'],
+        'Piston extension'],
     '\x23': [
         'Wool',
-        'Gray / white cloth'],
+        'All colors cloth'],
     '\x24': [
-        'White cloth'],
+        'Block moved by piston'],
     '\x25': [
         'Yellow flower'],
     '\x26': [
@@ -235,8 +235,10 @@ BLOCK_TYPES = {
         'Redstone repeater [off]'],
     '\x5e': [
         'Redstone repeater [on]'],
-    '\x5f': [UNUSED_NAME],
-    '\x60': [UNUSED_NAME],
+    '\x5f': [
+         'Locked chest'],
+    '\x60': [
+         'Trapdoor'],
     '\x61': [UNUSED_NAME],
     '\x62': [UNUSED_NAME],
     '\x63': [UNUSED_NAME],
