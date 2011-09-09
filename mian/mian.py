@@ -222,7 +222,7 @@ def plot(counts, block_type_hexes, title, log, save_path, dpi):
         plt.savefig(save_path, dpi = dpi)
 
 
-def mian(world_dir, block_type_hexes, nether, log, save_path, dpi):
+def mian(world_dir, block_type_hexes, options):
     """
     Runs through the MCR files and gets the layer counts for the plot.
 
@@ -230,11 +230,11 @@ def mian(world_dir, block_type_hexes, nether, log, save_path, dpi):
     @param block_type_hexes: Subset of BLOCK_TYPES.keys().
     @param nether: Whether or not to graph The Nether.
     """
-
+    o = options
     title = basename(world_dir.rstrip('/'))
 
     # All world blocks are stored in DAT files
-    if nether:
+    if o.nether:
         mcr_files = glob(join(world_dir, 'DIM-1/region/*.mcr'))
         title += ' Nether'
     else:
@@ -242,7 +242,7 @@ def mian(world_dir, block_type_hexes, nether, log, save_path, dpi):
 
     title += ' - mian %s' % __version__
 
-    if mcr_files == []:
+    if not mcr_files:
         raise Usage('Invalid savegame path.')
 
     print "There are %s regions in the savegame directory" % len(mcr_files)
@@ -277,7 +277,7 @@ def mian(world_dir, block_type_hexes, nether, log, save_path, dpi):
 
     print "Done!"
 
-    plot(total_counts, block_type_hexes, title, log, save_path, dpi)
+    plot(total_counts, block_type_hexes, title, o.log, o.save_path, o.dpi)
 
 
 def count_blocks(region_blocks, block_type_hexes):
@@ -428,7 +428,7 @@ def main(argv=None):
             if found_hex not in block_type_hexes:  # Avoid duplicates
                 block_type_hexes.append(found_hex)
 
-    mian(world_dir, block_type_hexes, options.nether, options.log, options.save_path, options.dpi)
+    mian(world_dir, block_type_hexes, options)
 
 
 if __name__ == '__main__':
