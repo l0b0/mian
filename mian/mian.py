@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""mian - Mine analysis - Graph block types to altitude in a Minecraft save
+"""
+mian - Mine analysis - Graph block types to altitude in a Minecraft save
 game <http://github.com/l0b0/mian>
 
 Default syntax:
@@ -188,13 +189,27 @@ def plot(counts, block_type_hexes, title, log, save_path, dpi):
                 block_counts,
                 label=BLOCK_TYPES[block_type_hexes[index]][0],
                 linewidth=1,
-                nonposy='clip')
+                nonposy='clip',
+                picker=3)
     else:
         for index, block_counts in enumerate(counts):
             plt.plot(
                 block_counts,
                 label=BLOCK_TYPES[block_type_hexes[index]][0],
-                linewidth=1)
+                linewidth=1,
+                picker=3)
+
+    def on_pick(pickevent):
+        thisline = pickevent.artist
+        print "Toggeling", thisline.get_label()
+        if thisline.get_alpha() == None or thisline.get_alpha() == 1:
+            thisline.set_alpha(0.3)
+        else:
+            thisline.set_alpha(1)
+
+        fig.canvas.draw()
+        
+    fig.canvas.mpl_connect('pick_event', on_pick)
 
     plt.legend()
     plt.xlabel(LABEL_X)
@@ -266,7 +281,8 @@ def mian(world_dir, block_type_hexes, nether, log, save_path, dpi):
 
 
 def count_blocks(region_blocks, block_type_hexes):
-    """ This function counts blocks per layer.
+    """
+    This function counts blocks per layer.
 
     Returns a list with one element per scanned block.
     Each element is a list with 128 elements the amount
@@ -285,11 +301,13 @@ def count_blocks(region_blocks, block_type_hexes):
 
 
 def extract_region_blocks(mcr_file):
-    """ This function creates a string which contains
+    """
+    This function creates a string which contains
     all blocks within the chunks in a given region file.
 
     Returns a string with all the chunk blocks in NBT format
-    inside a region file concatenated. """
+    inside a region file concatenated.
+    """
 
     # Unpack block format
     # <http://www.minecraftwiki.net/wiki/Beta_Level_Format>
