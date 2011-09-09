@@ -184,14 +184,14 @@ def plot(counts, block_type_hexes, title, log, interactive):
                 label=BLOCK_TYPES[block_type_hexes[index]][0],
                 linewidth=1,
                 nonposy='clip',
-                picker=10)
+                picker=3)
     else:
         for index, block_counts in enumerate(counts):
             plt.plot(
                 block_counts,
                 label=BLOCK_TYPES[block_type_hexes[index]][0],
                 linewidth=1,
-                picker=10)
+                picker=3)
 
     def on_pick(pickevent):
         thisline = pickevent.artist
