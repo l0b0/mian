@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""mian - Mine analysis - Graph block types to altitude in a Minecraft save
+"""
+mian - Mine analysis - Graph block types to altitude in a Minecraft save
 game <http://github.com/l0b0/mian>
 
 Default syntax:
@@ -273,7 +274,8 @@ def mian(world_dir, block_type_hexes, nether, log, interactive):
 
 
 def count_blocks(region_blocks, block_type_hexes):
-    """ This function counts blocks per layer.
+    """
+    This function counts blocks per layer.
 
     Returns a list with one element per scanned block.
     Each element is a list with 128 elements the amount
@@ -292,11 +294,13 @@ def count_blocks(region_blocks, block_type_hexes):
 
 
 def extract_region_blocks(mcr_file):
-    """ This function creates a string which contains
+    """
+    This function creates a string which contains
     all blocks within the chunks in a given region file.
 
     Returns a string with all the chunk blocks in NBT format
-    inside a region file concatenated. """
+    inside a region file concatenated.
+    """
 
     # Unpack block format
     # <http://www.minecraftwiki.net/wiki/Beta_Level_Format>
