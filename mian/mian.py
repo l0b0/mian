@@ -181,10 +181,10 @@ def plot(counts, block_type_hexes, title, options):
     o = options
     if o.save_path:
         mpl.use('Agg')
-    
+
     import matplotlib.pyplot as plt
 
-    if o.plot_mode == 'normal':        
+    if o.plot_mode == 'normal':
         fig = plt.figure()
         fig.canvas.set_window_title(title)
 
@@ -213,7 +213,7 @@ def plot(counts, block_type_hexes, title, options):
                 thisline.set_alpha(1)
 
             fig.canvas.draw()
-            
+
         fig.canvas.mpl_connect('pick_event', on_pick)
 
         plt.legend()
@@ -222,19 +222,19 @@ def plot(counts, block_type_hexes, title, options):
 
     elif o.plot_mode == 'colormap' or o.plot_mode == 'wireframe':
         X, Z, min_chunk_x, min_chunk_z, max_chunk_x, max_chunk_z, Data = counts
-        
+
         if o.plot_mode == 'colormap':
-            Data = np.rot90(Data,3) # north on the top of the image
-            im = plt.imshow(Data, cmap=cm.jet, extent=(max_chunk_z, min_chunk_z, max_chunk_x, min_chunk_x))
-            im.set_interpolation('nearest') # pixels in the image are chunks, better than bilinear, etc.
+            Data = np.rot90(Data, 3) # north on the top of the image
+            im = plt.imshow(Data,
+                cmap=cm.jet,
+                extent=(max_chunk_z, min_chunk_z, max_chunk_x, min_chunk_x))
+            # Don't use interpolation, chunk as pixels
+            im.set_interpolation('nearest')
             plt.colorbar()
-            #im.set_interpolation('bicubic')
-            #im.set_interpolation('bilinear')
             plt.ylabel('X axis, negative to North')
             plt.xlabel('Z axis, negative to East')
             plt.title(title + '(north on top of image)')
-        
-        
+
         elif o.plot_mode == 'wireframe':
             fig = plt.figure()
             ax = Axes3D(fig)
@@ -247,8 +247,7 @@ def plot(counts, block_type_hexes, title, options):
         plt.show()
     else:
         print 'Saving image to: %s' % save_path
-        plt.savefig(save_path, dpi = dpi)
-        
+        plt.savefig(save_path, dpi = o.dpi)
 
 
 def mian(world_dir, block_type_hexes, options):
@@ -274,9 +273,11 @@ def mian(world_dir, block_type_hexes, options):
     if not mcr_files:
         raise Usage('Invalid savegame path.')
 
-    total_counts = generate_graph_data(world_dir, mcr_files, block_type_hexes, o.plot_mode)
+    total_counts = generate_graph_data(world_dir,
+                    mcr_files, block_type_hexes, o.plot_mode)
 
     plot(total_counts, block_type_hexes, title, options)
+
 
 def generate_graph_data(world_dir, mcr_files, block_type_hexes, plot_mode):
     if plot_mode == 'normal':
@@ -311,18 +312,17 @@ def generate_graph_data(world_dir, mcr_files, block_type_hexes, plot_mode):
             raise Usage('No blocks were recognized.')
 
         print "Done!"
-        
+
         return total_counts
 
     elif plot_mode == 'colormap' or plot_mode == 'wireframe':
-        
-        
+
         # Find the maximun and minimun region coordinates
         min_x = 0
         min_z = 0
         max_x = 0
         max_z = 0
-        
+
         for mcr_file in mcr_files:
             region_x, region_z = get_region_coords(mcr_file)
             min_x = min(min_x, region_x)
@@ -342,29 +342,32 @@ def generate_graph_data(world_dir, mcr_files, block_type_hexes, plot_mode):
         X, Z = np.meshgrid(X, Z)
 
         # Generate data
-        Data = np.zeros((X.shape[0]-1,X.shape[1]-1))
-        
+        Data = np.zeros((X.shape[0]-1, X.shape[1]-1))
+
         total_chunks = X.shape[0] * X.shape[1]
-        progress=1
+        progress = 1
         print "Scanning chunks... "
-        
+
         for index_x in xrange(abs(min_chunk_x) + abs(max_chunk_x)):
             for index_z in xrange(abs(min_chunk_z) + abs(max_chunk_z)):
-                
+
                 # be careful with the index in the np.array!
-                counts = count_chunk_blocks(world_dir, (X[index_z][index_x],Z[index_z][index_x]), block_type_hexes[0])
+                counts = count_chunk_blocks(world_dir,
+                    (X[index_z][index_x], Z[index_z][index_x]),
+                     block_type_hexes[0])
                 if counts < 0:
-                    Data[index_z][index_x] = -10 # To properly show zones without chunks
-                    
+                    # To properly show zones without chunks
+                    Data[index_z][index_x] = -10
+
                 else:
-                    Data[index_z][index_x] = counts 
-                    
+                    Data[index_z][index_x] = counts
+
                 progress += 1   
                 if progress % 1000 == 0:
-                    print int(float(progress) / total_chunks *100), "%"
-                    
+                    print int(float(progress) / total_chunks * 100), "%"
+
         print "100%... Done!"
-        
+
         return (X, Z, min_chunk_x, min_chunk_z, max_chunk_x, max_chunk_z, Data)
 
 
@@ -417,11 +420,11 @@ def get_region_coords(mcr_file):
     """ Takes the name of a file with or without the full path and
     returns 2 integers with the coordinates of a region file """
     
-    regionXZ = basename(mcr_file).lstrip('r.').split('.',2)[:2]
-    return int(regionXZ[0]),int(regionXZ[1])
+    regionXZ = basename(mcr_file).lstrip('r.').split('.', 2)[:2]
+    return int(regionXZ[0]), int(regionXZ[1])
 
 
-def count_chunk_blocks(world_dir,chunkXZ, block_type):
+def count_chunk_blocks(world_dir, chunkXZ, block_type):
     """ Takes the global chunk coordinates, the world_dir 
     and the block type for count.
     
@@ -430,11 +433,11 @@ def count_chunk_blocks(world_dir,chunkXZ, block_type):
     """
 
     # Determine the propper region file.
-    regionXZ = (chunkXZ[0] / 32, chunkXZ[1] / 32)
-    mcr_file = world_dir.rstrip('/') + "/region/r." + str(regionXZ[0]) + "." + str(regionXZ[1]) + ".mcr"
+    rXZ = (chunkXZ[0] / 32, chunkXZ[1] / 32)
+    mcr_file = world_dir.rstrip('/') + "/region/r." + str(rXZ[0]) + "." + str(rXZ[1]) + ".mcr"
 
     # Determine chunk coords in region file.
-    local_chunkXZ = (divmod(chunkXZ[0],32)[1], + divmod(chunkXZ[1],32)[1])
+    local_chunkXZ = (divmod(chunkXZ[0], 32)[1], + divmod(chunkXZ[1], 32)[1])
 
     blocks = extract_region_chunk_blocks(mcr_file, local_chunkXZ)
 
@@ -537,6 +540,7 @@ class Usage(Exception):
         super(Usage, self).__init__(msg)
         self.msg = msg + '\nSee --help for more information.'
 
+
 def main(argv=None):
     """Argument handling."""
 
@@ -559,9 +563,11 @@ def main(argv=None):
         help = "Render logarithmic output.")
     parser.add_option("-o", "--output", default = None, dest = "save_path",
         help = "Save the result to file instead of showing an interactive GUI.")
-    parser.add_option("--dpi",type = 'int', default = 100, dest = "dpi",
+    parser.add_option("--dpi", type = 'int', default = 100, dest = "dpi",
         help = "The resolution in dots per inch for the --output option. Default = 100 (800x600).")
-    parser.add_option("--plot-mode","-p", type = 'string', default = 'normal', dest = 'plot_mode')
+    parser.add_option("--plot-mode", "-p", type = 'string', default = 'normal', dest = 'plot_mode'
+        help = "The plot modes are: normal, colormap and wireframe \(3D\). Wargning! \
+                Wireframe can be really resource consuming with big maps")
 
     (options, args) = parser.parse_args()
 
