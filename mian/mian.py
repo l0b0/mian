@@ -61,6 +61,9 @@ import sys
 import warnings
 import zlib
 from optparse import OptionParser
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
+import numpy as np
 
 from blocks import BLOCK_TYPES, UNUSED_NAME
 
@@ -168,58 +171,84 @@ def print_block_types():
             sys.stdout.write(', '.join(block_names) + '\n')
 
 
-def plot(counts, block_type_hexes, title, log, save_path, dpi):
+def plot(counts, block_type_hexes, title, options):
     """
     Actual plotting of data.
 
     @param counts: Integer counts per layer.
     @param block_type_hexes: Subset of BLOCK_TYPES.keys().
     """
-    if save_path:
+    o = options
+    if o.save_path:
         mpl.use('Agg')
     
     import matplotlib.pyplot as plt
-    
-    fig = plt.figure()
-    fig.canvas.set_window_title(title)
 
-    if log:
-        for index, block_counts in enumerate(counts):
-            plt.semilogy(
-                block_counts,
-                label=BLOCK_TYPES[block_type_hexes[index]][0],
-                linewidth=1,
-                nonposy='clip',
-                picker=3)
-    else:
-        for index, block_counts in enumerate(counts):
-            plt.plot(
-                block_counts,
-                label=BLOCK_TYPES[block_type_hexes[index]][0],
-                linewidth=1,
-                picker=3)
+    if o.plot_mode == 'normal':        
+        fig = plt.figure()
+        fig.canvas.set_window_title(title)
 
-    def on_pick(pickevent):
-        thisline = pickevent.artist
-        print "Toggeling", thisline.get_label()
-        if thisline.get_alpha() == None or thisline.get_alpha() == 1:
-            thisline.set_alpha(0.3)
+        if o.log:
+            for index, block_counts in enumerate(counts):
+                plt.semilogy(
+                    block_counts,
+                    label=BLOCK_TYPES[block_type_hexes[index]][0],
+                    linewidth=1,
+                    nonposy='clip',
+                    picker=3)
         else:
-            thisline.set_alpha(1)
+            for index, block_counts in enumerate(counts):
+                plt.plot(
+                    block_counts,
+                    label=BLOCK_TYPES[block_type_hexes[index]][0],
+                    linewidth=1,
+                    picker=3)
 
-        fig.canvas.draw()
+        def on_pick(pickevent):
+            thisline = pickevent.artist
+            print "Toggeling", thisline.get_label()
+            if thisline.get_alpha() == None or thisline.get_alpha() == 1:
+                thisline.set_alpha(0.3)
+            else:
+                thisline.set_alpha(1)
+
+            fig.canvas.draw()
+            
+        fig.canvas.mpl_connect('pick_event', on_pick)
+
+        plt.legend()
+        plt.xlabel(LABEL_X)
+        plt.ylabel(LABEL_Y)
+
+    elif o.plot_mode == 'colormap' or o.plot_mode == 'wireframe':
+        X, Z, min_chunk_x, min_chunk_z, max_chunk_x, max_chunk_z, Data = counts
         
-    fig.canvas.mpl_connect('pick_event', on_pick)
+        if o.plot_mode == 'colormap':
+            Data = np.rot90(Data,3) # north on the top of the image
+            im = plt.imshow(Data, cmap=cm.jet, extent=(max_chunk_z, min_chunk_z, max_chunk_x, min_chunk_x))
+            im.set_interpolation('nearest') # pixels in the image are chunks, better than bilinear, etc.
+            plt.colorbar()
+            #im.set_interpolation('bicubic')
+            #im.set_interpolation('bilinear')
+            plt.ylabel('X axis, negative to North')
+            plt.xlabel('Z axis, negative to East')
+            plt.title(title + '(north on top of image)')
+        
+        
+        elif o.plot_mode == 'wireframe':
+            fig = plt.figure()
+            ax = Axes3D(fig)
+            ax.plot_wireframe(X, Z, Data, rstride=1, cstride=1)
+            plt.xlabel('X axis, negative to North')
+            plt.ylabel('Z axis, negative to East')
+            plt.title(title + '(north on top of image)')
 
-    plt.legend()
-    plt.xlabel(LABEL_X)
-    plt.ylabel(LABEL_Y)
-
-    if save_path == None:
+    if o.save_path == None:
         plt.show()
     else:
         print 'Saving image to: %s' % save_path
         plt.savefig(save_path, dpi = dpi)
+        
 
 
 def mian(world_dir, block_type_hexes, options):
@@ -245,46 +274,176 @@ def mian(world_dir, block_type_hexes, options):
     if not mcr_files:
         raise Usage('Invalid savegame path.')
 
-    total_counts = generate_graph_data(mcr_files, block_type_hexes)
+    total_counts = generate_graph_data(world_dir, mcr_files, block_type_hexes, o.plot_mode)
 
-    plot(total_counts, block_type_hexes, title, o.log, o.save_path, o.dpi)
+    plot(total_counts, block_type_hexes, title, options)
 
-def generate_graph_data(mcr_files, block_type_hexes, plot_mode = 'normal'):
+def generate_graph_data(world_dir, mcr_files, block_type_hexes, plot_mode):
+    if plot_mode == 'normal':
+        print "There are %s regions in the savegame directory" % len(mcr_files)
 
-    print "There are %s regions in the savegame directory" % len(mcr_files)
-
-    # Create total_counts list and write a list of 128 zeros on it for
-    # every scanned block.
-    total_counts = [[] for i in xrange(len(block_type_hexes))]
-    for block_type_index in range(len(block_type_hexes)):
-        for layer in range(128):
-            total_counts[block_type_index].append(int(0))
-
-    total_mcr_files = len(mcr_files)
-    file_counter = 1
-
-    for mcr_file in mcr_files:
-
-        print "Reading %# 5u / %u" % (file_counter, total_mcr_files)
-
-        region_blocks = extract_region_blocks(mcr_file)
-        counts = count_blocks(region_blocks, block_type_hexes)
-
-        # Sum up the results
+        # Create total_counts list and write a list of 128 zeros on it for
+        # every scanned block.
+        total_counts = [[] for i in xrange(len(block_type_hexes))]
         for block_type_index in range(len(block_type_hexes)):
             for layer in range(128):
-                total_counts[block_type_index][layer] += \
-                    counts[block_type_index][layer]
+                total_counts[block_type_index].append(int(0))
 
-        file_counter += 1
+        total_mcr_files = len(mcr_files)
+        file_counter = 1
 
-    if total_counts == [[] for i in xrange(len(block_type_hexes))]:
-        raise Usage('No blocks were recognized.')
+        for mcr_file in mcr_files:
 
-    print "Done!"
+            print "Reading %# 5u / %u" % (file_counter, total_mcr_files)
+
+            region_blocks = extract_region_blocks(mcr_file)
+            counts = count_blocks(region_blocks, block_type_hexes)
+
+            # Sum up the results
+            for block_type_index in range(len(block_type_hexes)):
+                for layer in range(128):
+                    total_counts[block_type_index][layer] += \
+                        counts[block_type_index][layer]
+
+            file_counter += 1
+
+        if total_counts == [[] for i in xrange(len(block_type_hexes))]:
+            raise Usage('No blocks were recognized.')
+
+        print "Done!"
+        
+        return total_counts
+
+    elif plot_mode == 'colormap' or plot_mode == 'wireframe':
+        
+        
+        # Find the maximun and minimun region coordinates
+        min_x = 0
+        min_z = 0
+        max_x = 0
+        max_z = 0
+        
+        for mcr_file in mcr_files:
+            region_x, region_z = get_region_coords(mcr_file)
+            min_x = min(min_x, region_x)
+            min_z = min(min_z, region_z)
+            max_x = max(max_x, region_x)
+            max_z = max(max_z, region_z)
+
+        # Find the chunk coordinates of these region coordinates
+        min_chunk_x = min_x * 32
+        min_chunk_z = min_z * 32
+        max_chunk_x = max_x * 32 + 31
+        max_chunk_z = max_z * 32 + 31
+
+        # Generate a grid for the graph using numpy
+        X = np.arange(min_chunk_x, max_chunk_x + 1, 1)
+        Z = np.arange(min_chunk_z, max_chunk_z + 1, 1)
+        X, Z = np.meshgrid(X, Z)
+
+        # Generate data
+        Data = np.zeros((X.shape[0]-1,X.shape[1]-1))
+        
+        total_chunks = X.shape[0] * X.shape[1]
+        progress=1
+        print "Scanning chunks... "
+        
+        for index_x in xrange(abs(min_chunk_x) + abs(max_chunk_x)):
+            for index_z in xrange(abs(min_chunk_z) + abs(max_chunk_z)):
+                
+                # be careful with the index in the np.array!
+                counts = count_chunk_blocks(world_dir, (X[index_z][index_x],Z[index_z][index_x]), "\x32")
+                if counts < 0:
+                    Data[index_z][index_x] = -10 # To properly show zones without chunks
+                    
+                else:
+                    Data[index_z][index_x] = counts 
+                    
+                progress += 1   
+                if progress % 1000 == 0:
+                    print int(float(progress) / total_chunks *100), "%"
+                    
+        print "100%... Done!"
+        
+        return (X, Z, min_chunk_x, min_chunk_z, max_chunk_x, max_chunk_z, Data)
+
+
+def extract_region_chunk_blocks(mcr_file, coordsXZ):
+    """ Takes a region file and a local chunk coordinates 
+    and returns the blocks as a string.
     
-    return total_counts
+    Returns None if the chunk is not in the region file,
+    or if the region file doesn't exist.
+    """
+    
+    def location(coordsXZ):
+        return 4 * ((coordsXZ[0] % 32) + (coordsXZ[1] % 32) * 32)
 
+    try:
+        file_pointer = open(mcr_file, 'rb')
+    except IOError:
+        return None
+
+    file_pointer.seek(location(coordsXZ))
+
+    # Locate sector
+    location_raw = file_pointer.read(LOCATION_BYTES)
+    location = struct.unpack(
+        LOCATION_FORMAT,
+        LOCATION_PADDING + location_raw)[0]
+    if location == 0:
+        return None
+
+    # Get chunk and decompress
+    file_pointer.seek(location * SECTOR_BYTES)
+    chunk_length = struct.unpack(
+        UNSIGNED_LONG_FORMAT,
+        file_pointer.read(CHUNK_LENGTH_BYTES))[0]
+    chunk_compression = struct.unpack(
+        UNSIGNED_CHAR_FORMAT,
+        file_pointer.read(COMPRESSION_BYTES))[0]
+    chunk_raw = file_pointer.read(chunk_length)
+    chunk = decompress(chunk_raw, chunk_compression)
+
+    # Extract the blocks of the chunk
+    index = chunk.find(BLOCKS_NBT_TAG)
+    blocks = chunk[
+        (index + len(BLOCKS_NBT_TAG)):(index + len(BLOCKS_NBT_TAG) + 32768)]
+
+    return blocks
+
+
+def get_region_coords(mcr_file):
+    """ Takes the name of a file with or without the full path and
+    returns 2 integers with the coordinates of a region file """
+    
+    regionXZ = basename(mcr_file).lstrip('r.').split('.',2)[:2]
+    return int(regionXZ[0]),int(regionXZ[1])
+
+
+def count_chunk_blocks(world_dir,chunkXZ, block_type):
+    """ Takes the global chunk coordinates, the world_dir 
+    and the block type for count.
+    
+    Returns the count of block or -1 if the chunk, or the 
+    region file doesn't exist.
+    """
+
+    # Determine the propper region file.
+    regionXZ = (chunkXZ[0] / 32, chunkXZ[1] / 32)
+    mcr_file = world_dir.rstrip('/') + "/region/r." + str(regionXZ[0]) + "." + str(regionXZ[1]) + ".mcr"
+
+    # Determine chunk coords in region file.
+    local_chunkXZ = (divmod(chunkXZ[0],32)[1], + divmod(chunkXZ[1],32)[1])
+
+    blocks = extract_region_chunk_blocks(mcr_file, local_chunkXZ)
+
+    if blocks == None:
+        return -1
+
+    count = blocks.count(block_type)
+
+    return count
 
 
 def count_blocks(region_blocks, block_type_hexes):
@@ -402,6 +561,7 @@ def main(argv=None):
         help = "Save the result to file instead of showing an interactive GUI.")
     parser.add_option("--dpi",type = 'int', default = 100, dest = "dpi",
         help = "The resolution in dots per inch for the --output option. Default = 100 (800x600).")
+    parser.add_option("--plot-mode","-p", type = 'string', default = 'normal', dest = 'plot_mode')
 
     (options, args) = parser.parse_args()
 
