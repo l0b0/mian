@@ -352,7 +352,7 @@ def generate_graph_data(world_dir, mcr_files, block_type_hexes, plot_mode):
             for index_z in xrange(abs(min_chunk_z) + abs(max_chunk_z)):
                 
                 # be careful with the index in the np.array!
-                counts = count_chunk_blocks(world_dir, (X[index_z][index_x],Z[index_z][index_x]), "\x32")
+                counts = count_chunk_blocks(world_dir, (X[index_z][index_x],Z[index_z][index_x]), block_type_hexes[0])
                 if counts < 0:
                     Data[index_z][index_x] = -10 # To properly show zones without chunks
                     
