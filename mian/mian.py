@@ -565,7 +565,7 @@ def main(argv=None):
         help = "Save the result to file instead of showing an interactive GUI.")
     parser.add_option("--dpi", type = 'int', default = 100, dest = "dpi",
         help = "The resolution in dots per inch for the --output option. Default = 100 (800x600).")
-    parser.add_option("--plot-mode", "-p", type = 'string', default = 'normal', dest = 'plot_mode'
+    parser.add_option("--plot-mode", "-p", type = 'string', default = 'normal', dest = 'plot_mode',
         help = "The plot modes are: normal, colormap and wireframe \(3D\). Wargning! \
                 Wireframe can be really resource consuming with big maps")
 
