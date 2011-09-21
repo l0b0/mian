@@ -586,6 +586,10 @@ def main(argv=None):
     if not options.dpi > 0:
         parser.error('dpi should be an interger greater than 0, given \'%s\'' % options.dpi)
 
+    plot_modes = ["normal", "colormap", "wireframe"]
+    if options.plot_mode not in plot_modes:
+        parser.error('The plot mode \'{0}\' is not recognized'.format(options.plot_mode))
+
     world_dir = args[0]
 
     # Look up block_types
