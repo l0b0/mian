@@ -238,7 +238,7 @@ def plot(counts, block_type_hexes, title, options):
         elif o.plot_mode == 'wireframe':
             fig = plt.figure()
             ax = Axes3D(fig)
-            ax.plot_wireframe(X, Z, Data, rstride=1, cstride=1)
+            ax.plot_wireframe(Z, X, Data, rstride=1, cstride=1)
             plt.xlabel('X axis, negative to North (chunks)')
             plt.ylabel('Z axis, negative to East (chunks)')
             plt.title(title + '(north on top of image)')
