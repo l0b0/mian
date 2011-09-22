@@ -577,7 +577,7 @@ def main(argv=None):
         help = "The resolution in dots per inch for the --output option. Default = 100 (800x600).")
     parser.add_option("--plot-mode", "-p", type = 'string', default = 'normal', dest = 'plot_mode',
         help = "The plot modes are: normal, colormap and wireframe \(3D\). Wargning! \
-                Wireframe can be really resource consuming with big maps")
+                Wireframe can be really resource hungry with big maps")
 
     (options, args) = parser.parse_args()
 
@@ -614,6 +614,9 @@ def main(argv=None):
         for found_hex in found_hexes:
             if found_hex not in block_type_hexes:  # Avoid duplicates
                 block_type_hexes.append(found_hex)
+
+    if block_type_hexes == []:
+        parser.error('No proper blocks given!')
 
     mian(world_dir, block_type_hexes, options)
 
