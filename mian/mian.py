@@ -231,16 +231,16 @@ def plot(counts, block_type_hexes, title, options):
             # Don't use interpolation, chunk as pixels
             im.set_interpolation('nearest')
             plt.colorbar()
-            plt.ylabel('X axis, negative to North')
-            plt.xlabel('Z axis, negative to East')
+            plt.ylabel('X axis, negative to North (blocks)')
+            plt.xlabel('Z axis, negative to East (blocks)')
             plt.title(title + '(north on top of image)')
 
         elif o.plot_mode == 'wireframe':
             fig = plt.figure()
             ax = Axes3D(fig)
             ax.plot_wireframe(X, Z, Data, rstride=1, cstride=1)
-            plt.xlabel('X axis, negative to North')
-            plt.ylabel('Z axis, negative to East')
+            plt.xlabel('X axis, negative to North (chunks)')
+            plt.ylabel('Z axis, negative to East (chunks)')
             plt.title(title + '(north on top of image)')
 
     if o.save_path == None:
@@ -267,6 +267,10 @@ def mian(world_dir, block_type_hexes, options):
         title += ' Nether'
     else:
         mcr_files = glob(join(world_dir, 'region/*.mcr'))
+    
+    if o.plot_mode == 'colormap' or o.plot_mode == 'wirframe':
+        title += ' - map for block {0}'.format(
+            BLOCK_TYPES[block_type_hexes[0]][0])
 
     title += ' - mian %s' % __version__
 
@@ -336,9 +340,15 @@ def generate_graph_data(world_dir, mcr_files, block_type_hexes, plot_mode):
         max_chunk_x = max_x * 32 + 31
         max_chunk_z = max_z * 32 + 31
 
+        # Find the block coordinates of these chunk coordinates
+        min_block_x = min_chunk_x * 16
+        min_block_z = min_chunk_z * 16
+        max_block_x = max_chunk_x * 16 + 15
+        max_block_z = max_chunk_z * 16 + 15
+
         # Generate a grid for the graph using numpy
-        X = np.arange(min_chunk_x, max_chunk_x + 1, 1)
-        Z = np.arange(min_chunk_z, max_chunk_z + 1, 1)
+        X = np.arange(min_chunk_x, max_chunk_x + 1)
+        Z = np.arange(min_chunk_z, max_chunk_z + 1)
         X, Z = np.meshgrid(X, Z)
 
         # Generate data
@@ -368,7 +378,7 @@ def generate_graph_data(world_dir, mcr_files, block_type_hexes, plot_mode):
 
         print "100%... Done!"
 
-        return (X, Z, min_chunk_x, min_chunk_z, max_chunk_x, max_chunk_z, Data)
+        return (X, Z, min_block_x, min_block_z, max_block_x, max_block_z, Data)
 
 
 def extract_region_chunk_blocks(mcr_file, coordsXZ):
