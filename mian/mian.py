@@ -267,7 +267,7 @@ def mian(world_dir, block_type_hexes, options):
         title += ' Nether'
     else:
         mcr_files = glob(join(world_dir, 'region/*.mcr'))
-    
+
     if o.plot_mode == 'colormap' or o.plot_mode == 'wirframe':
         title += ' - map for block {0}'.format(
             BLOCK_TYPES[block_type_hexes[0]][0])
@@ -372,7 +372,7 @@ def generate_graph_data(world_dir, mcr_files, block_type_hexes, plot_mode):
                 else:
                     Data[index_z][index_x] = counts
 
-                progress += 1   
+                progress += 1
                 if progress % 1000 == 0:
                     print int(float(progress) / total_chunks * 100), "%"
 
@@ -382,13 +382,13 @@ def generate_graph_data(world_dir, mcr_files, block_type_hexes, plot_mode):
 
 
 def extract_region_chunk_blocks(mcr_file, coordsXZ):
-    """ Takes a region file and a local chunk coordinates 
+    """ Takes a region file and a local chunk coordinates
     and returns the blocks as a string.
-    
+
     Returns None if the chunk is not in the region file,
     or if the region file doesn't exist.
     """
-    
+
     def location(coordsXZ):
         return 4 * ((coordsXZ[0] % 32) + (coordsXZ[1] % 32) * 32)
 
@@ -429,22 +429,23 @@ def extract_region_chunk_blocks(mcr_file, coordsXZ):
 def get_region_coords(mcr_file):
     """ Takes the name of a file with or without the full path and
     returns 2 integers with the coordinates of a region file """
-    
+
     regionXZ = basename(mcr_file).lstrip('r.').split('.', 2)[:2]
     return int(regionXZ[0]), int(regionXZ[1])
 
 
 def count_chunk_blocks(world_dir, chunkXZ, block_type):
-    """ Takes the global chunk coordinates, the world_dir 
+    """ Takes the global chunk coordinates, the world_dir
     and the block type for count.
-    
-    Returns the count of block or -1 if the chunk, or the 
+
+    Returns the count of block or -1 if the chunk, or the
     region file doesn't exist.
     """
 
     # Determine the propper region file.
     rXZ = (chunkXZ[0] / 32, chunkXZ[1] / 32)
-    mcr_file = world_dir.rstrip('/') + "/region/r." + str(rXZ[0]) + "." + str(rXZ[1]) + ".mcr"
+    mcr_file = world_dir.rstrip('/') + "/region/r." + str(rXZ[0]) + \
+        "." + str(rXZ[1]) + ".mcr"
 
     # Determine chunk coords in region file.
     local_chunkXZ = (divmod(chunkXZ[0], 32)[1], + divmod(chunkXZ[1], 32)[1])
@@ -522,8 +523,10 @@ def extract_region_blocks(mcr_file):
         # Extract the blocks from the chunk
         index = chunk.find(BLOCKS_NBT_TAG)
         blocks = chunk[
-            (index + len(BLOCKS_NBT_TAG) + 4):(index + len(BLOCKS_NBT_TAG) + 4 + 32768)]
-            # after the NBT tag there is always for bytes with \x00 \x00 \x80 \x00, ignore them!
+            (index + len(BLOCKS_NBT_TAG) + 4):(index +
+            len(BLOCKS_NBT_TAG) + 4 + 32768)]
+            # after the NBT tag there is always
+            # four bytes with \x00 \x00 \x80 \x00, ignore them!
         region_blocks += blocks
 
     return region_blocks
@@ -556,14 +559,16 @@ def main(argv=None):
 
     # things for --help and --version options
     prog = 'mian'
-    description = 'mian: Mine analysis - Graph block types to altitude in a Minecraft save game <http://github.com/l0b0/mian>'
+    description = 'mian: Mine analysis - Graph block types to altitude \
+        in a Minecraft save game <http://github.com/l0b0/mian>'
     usage = 'usage: %prog [-b|--blocks=<list>] [-l|--list] <World directory>'
     version = '0.9.2'
 
     # populating the parser
-    parser = OptionParser(usage = usage, version = version, description = description, prog = prog)
+    parser = OptionParser(usage = usage, version = version,
+        description = description, prog = prog)
 
-    parser.add_option("-b", "--blocks", dest="block_type_names", default = None, 
+    parser.add_option("-b", "--blocks", dest="block_type_names", default = None,
         help="Specify block types to include as a comma-separated list, using either the block types or hex values from the list.")
     parser.add_option("-l", "--list", action = "store_true", dest = "print_blocks",
         help = "List available block types and their names (from <http://www.minecraftwiki.net/wiki/Data_values>)")
@@ -607,7 +612,7 @@ def main(argv=None):
         block_type_names = DEFAULT_BLOCK_TYPES
     else:
         block_type_names = options.block_type_names.split(',')
-        
+
     block_type_hexes = []
     for block_type_name in block_type_names:
         found_hexes = lookup_block_type(block_type_name)
