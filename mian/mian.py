@@ -562,7 +562,7 @@ def main(argv=None):
     description = 'mian: Mine analysis - Graph block types to altitude \
         in a Minecraft save game <http://github.com/l0b0/mian>'
     usage = 'usage: %prog [-b|--blocks=<list>] [-l|--list] <World directory>'
-    version = '0.9.2'
+    version = __version__
 
     # populating the parser
     parser = OptionParser(usage = usage, version = version,
