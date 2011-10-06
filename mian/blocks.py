@@ -278,9 +278,12 @@ BLOCK_TYPES = {
          'Nether Brick Stairs'],
     '\x73': [
          'Nether Wart'],
-    '\x74': [UNUSED_NAME],
-    '\x75': [UNUSED_NAME],
-    '\x76': [UNUSED_NAME],
+    '\x74': [
+         'Enchantment Table'],
+    '\x75': [
+         'Brewing Stand'],
+    '\x76': [
+         'Cauldron'],
     '\x77': [UNUSED_NAME],
     '\x78': [UNUSED_NAME],
     '\x79': [UNUSED_NAME],
