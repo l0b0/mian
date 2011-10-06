@@ -239,25 +239,45 @@ BLOCK_TYPES = {
          'Locked chest'],
     '\x60': [
          'Trapdoor'],
-    '\x61': [UNUSED_NAME],
-    '\x62': [UNUSED_NAME],
-    '\x63': [UNUSED_NAME],
-    '\x64': [UNUSED_NAME],
-    '\x65': [UNUSED_NAME],
-    '\x66': [UNUSED_NAME],
-    '\x67': [UNUSED_NAME],
-    '\x68': [UNUSED_NAME],
-    '\x69': [UNUSED_NAME],
-    '\x6a': [UNUSED_NAME],
-    '\x6b': [UNUSED_NAME],
-    '\x6c': [UNUSED_NAME],
-    '\x6d': [UNUSED_NAME],
-    '\x6e': [UNUSED_NAME],
-    '\x6f': [UNUSED_NAME],
-    '\x70': [UNUSED_NAME],
-    '\x71': [UNUSED_NAME],
-    '\x72': [UNUSED_NAME],
-    '\x73': [UNUSED_NAME],
+    '\x61': [
+         'Hidden Silverfish',
+         'Silverfish'],
+    '\x62': [
+         'Stone Bricks'],
+    '\x63': [
+         'Huge Brown Mushroom'],
+    '\x64': [
+         'Huge Red Mushroom'],
+    '\x65': [
+         'Iron Bars'],
+    '\x66': [
+         'Glass Pane'],
+    '\x67': [
+         'Melon'],
+    '\x68': [
+         'Pumpkin Stem'],
+    '\x69': [
+         'Melon Stem'],
+    '\x6a': [
+         'Vines'],
+    '\x6b': [
+         'Fence Gate'],
+    '\x6c': [
+         'Brick Stairs'],
+    '\x6d': [
+         'Stone Brick Stairs'],
+    '\x6e': [
+         'Mycelium'],
+    '\x6f': [
+         'Lily Pad'],
+    '\x70': [
+         'Nether Brick'],
+    '\x71': [
+         'Nether Brick Fence'],
+    '\x72': [
+         'Nether Brick Stairs'],
+    '\x73': [
+         'Nether Wart'],
     '\x74': [UNUSED_NAME],
     '\x75': [UNUSED_NAME],
     '\x76': [UNUSED_NAME],
