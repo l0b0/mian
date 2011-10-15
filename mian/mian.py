@@ -253,7 +253,20 @@ def plot(counts, block_type_hexes, title, options):
             plt.ylabel('Z axis, negative to East (chunks)')
             plt.title(title + '(north on top of image)')
 
-    if o.save_path == None:
+    if o.plot_mode == 'table':
+        output = "Block\t" + "\t".join([str(i) for i in xrange(128)]) + "\n"
+        for index, block_counts in enumerate(counts):
+            output += BLOCK_TYPES[block_type_hexes[index]][0] + "\t"
+            output += "\t".join([str(i) for i in block_counts]) + "\n"
+        if o.save_path == None:
+            sys.stdout.write(output)
+        else:
+            print 'Saving image to: %s' % o.save_path
+            f = open(o.save_path, 'w')
+            f.write(output)
+            f.close()
+        return
+    elif o.save_path == None:
         plt.show()
     else:
         print 'Saving image to: %s' % o.save_path
@@ -294,7 +307,7 @@ def mian(world_dir, block_type_hexes, options):
 
 
 def generate_graph_data(world_dir, mcr_files, block_type_hexes, plot_mode):
-    if plot_mode == 'normal':
+    if plot_mode == 'normal' or plot_mode == 'table':
         print "There are %s regions in the savegame directory" % len(mcr_files)
 
         # Create total_counts list and write a list of 128 zeros on it for
@@ -580,7 +593,7 @@ def main(argv=None):
 
     parser.add_option("-b", "--blocks", dest="block_type_names", default = None,
         help="Specify block types to include as a comma-separated list, using "\
-        "either the block types or hex values from the list. Specify ALL to add "\
+        "either the block types or hex values from the list. Specify ALL to include "\
         "all block types.")
     parser.add_option("-l", "--list", action = "store_true", dest = "print_blocks",
         help = "List available block types and their names "\
@@ -595,8 +608,8 @@ def main(argv=None):
         help = "The resolution in dots per inch for the --output option. "\
         "Default = 100 (800x600).")
     parser.add_option("--plot-mode", "-p", type = 'string', default = 'normal', dest = 'plot_mode',
-        help = "The plot modes are: normal, colormap and wireframe (3D). Warning! "\
-        "Wireframe can be really resource hungry with big maps")
+        help = "The plot modes are: normal, colormap, wireframe (3D) and table. "\
+        "Warning! Wireframe can be really resource hungry with big maps")
 
     (options, args) = parser.parse_args()
 
@@ -615,7 +628,7 @@ def main(argv=None):
     if not options.dpi > 0:
         parser.error('dpi should be an interger greater than 0, given \'%s\'' % options.dpi)
 
-    plot_modes = ["normal", "colormap", "wireframe"]
+    plot_modes = ["normal", "table", "colormap", "wireframe"]
     if options.plot_mode not in plot_modes:
         parser.error('The plot mode \'{0}\' is not recognized'.format(options.plot_mode))
 
