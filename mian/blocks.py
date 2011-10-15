@@ -8,6 +8,7 @@ UNUSED_NAME = '<unused>'
 
 # The first name is the canonical one (for the moment).
 # Subsequent names are synonyms.
+# FIXME: index is now a character, not a byte. Change e.g. '\0x00' to 0x00.
 BLOCK_TYPES = {
     '\x00': [
         'Air'],

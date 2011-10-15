@@ -569,7 +569,7 @@ def main(argv=None):
         description = description, prog = prog)
 
     parser.add_option("-b", "--blocks", dest="block_type_names", default = None,
-        help="Specify block types to include as a comma-separated list, using either the block types or hex values from the list.")
+        help="Specify block types to include as a comma-separated list, using either the block types or hex values from the list. Specify ALL to add all block types.")
     parser.add_option("-l", "--list", action = "store_true", dest = "print_blocks",
         help = "List available block types and their names (from <http://www.minecraftwiki.net/wiki/Data_values>)")
     parser.add_option("-n", "--nether", action = "store_true", default = False, dest = "nether",
@@ -609,6 +609,9 @@ def main(argv=None):
     # Look up block_types
     if options.block_type_names == None:
         block_type_names = DEFAULT_BLOCK_TYPES
+    elif options.block_type_names.upper() == 'ALL':
+        # Bit ugly: we now add names of known block, only to later convert them back to hex codes.
+        block_type_names = [BLOCK_TYPES[chr(i)][0] for i in xrange(0,256) if BLOCK_TYPES[chr(i)] != [UNUSED_NAME]]
     else:
         block_type_names = options.block_type_names.split(',')
 
