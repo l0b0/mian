@@ -246,8 +246,8 @@ def plot(counts, block_type_hexes, title, options):
     if o.save_path == None:
         plt.show()
     else:
-        print 'Saving image to: %s' % save_path
-        plt.savefig(save_path, dpi = o.dpi)
+        print 'Saving image to: %s' % o.save_path
+        plt.savefig(o.save_path, dpi = o.dpi)
 
 
 def mian(world_dir, block_type_hexes, options):
@@ -268,7 +268,7 @@ def mian(world_dir, block_type_hexes, options):
     else:
         mcr_files = glob(join(world_dir, 'region/*.mcr'))
 
-    if o.plot_mode == 'colormap' or o.plot_mode == 'wirframe':
+    if o.plot_mode == 'colormap' or o.plot_mode == 'wireframe':
         title += ' - map for block {0}'.format(
             BLOCK_TYPES[block_type_hexes[0]][0])
 

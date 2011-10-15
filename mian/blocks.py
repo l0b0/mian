@@ -6,7 +6,7 @@ http://www.minecraftwiki.net/wiki/Data_values
 
 UNUSED_NAME = '<unused>'
 
-# The first name is the canocical one (for the moment).
+# The first name is the canonical one (for the moment).
 # Subsequent names are synonyms.
 BLOCK_TYPES = {
     '\x00': [
