@@ -11,7 +11,8 @@ mian [-b|--blocks=<list>] [-l|--list] <World directory>
 Options:
 
 -b, --blocks    Specify block types to include as a comma-separated list, using
-                either the block types or hex values from the list.
+                either the block types or hex values from the list.  Specify ALL 
+                to add all block types.
 -l, --list      List available block types and their names (from
                 <http://www.minecraftwiki.net/wiki/Data_values>).
 -n, --nether    Graph The Nether instead of the ordinary world.
@@ -558,10 +559,10 @@ def main(argv=None):
     """Argument handling."""
 
     # things for --help and --version options
-    prog = 'mian'
-    description = 'mian: Mine analysis - Graph block types to altitude \
-        in a Minecraft save game <http://github.com/l0b0/mian>'
-    usage = 'usage: %prog [-b|--blocks=<list>] [-l|--list] <World directory>'
+    prog = basename(__file__)
+    description = 'mian: Mine analysis - Graph block types to altitude ' \
+        'in a Minecraft save game <http://github.com/l0b0/mian>'
+    usage = 'usage: %prog <World directory>. %prog --help for options.'
     version = __version__
 
     # populating the parser
@@ -569,9 +570,12 @@ def main(argv=None):
         description = description, prog = prog)
 
     parser.add_option("-b", "--blocks", dest="block_type_names", default = None,
-        help="Specify block types to include as a comma-separated list, using either the block types or hex values from the list. Specify ALL to add all block types.")
+        help="Specify block types to include as a comma-separated list, using "\
+        "either the block types or hex values from the list. Specify ALL to add "\
+        "all block types.")
     parser.add_option("-l", "--list", action = "store_true", dest = "print_blocks",
-        help = "List available block types and their names (from <http://www.minecraftwiki.net/wiki/Data_values>)")
+        help = "List available block types and their names "\
+        "(from <http://www.minecraftwiki.net/wiki/Data_values>)")
     parser.add_option("-n", "--nether", action = "store_true", default = False, dest = "nether",
         help = "Graph The Nether instead of the ordinary world.")
     parser.add_option("--log", action = "store_true", default = False, dest = "log",
@@ -579,9 +583,11 @@ def main(argv=None):
     parser.add_option("-o", "--output", default = None, dest = "save_path",
         help = "Save the result to file instead of showing an interactive GUI.")
     parser.add_option("--dpi", type = 'int', default = 100, dest = "dpi",
-        help = "The resolution in dots per inch for the --output option. Default = 100 (800x600).")
+        help = "The resolution in dots per inch for the --output option. "\
+        "Default = 100 (800x600).")
     parser.add_option("--plot-mode", "-p", type = 'string', default = 'normal', dest = 'plot_mode',
-        help = "The plot modes are: normal, colormap and wireframe (3D). Warning! Wireframe can be really resource hungry with big maps")
+        help = "The plot modes are: normal, colormap and wireframe (3D). Warning! "\
+        "Wireframe can be really resource hungry with big maps")
 
     (options, args) = parser.parse_args()
 
@@ -610,7 +616,7 @@ def main(argv=None):
     if options.block_type_names == None:
         block_type_names = DEFAULT_BLOCK_TYPES
     elif options.block_type_names.upper() == 'ALL':
-        # Bit ugly: we now add names of known block, only to later convert them back to hex codes.
+        # FIXME ugly: we now add names of known block, only to later convert them back to hex codes.
         block_type_names = [BLOCK_TYPES[chr(i)][0] for i in xrange(0,256) if BLOCK_TYPES[chr(i)] != [UNUSED_NAME]]
     else:
         block_type_names = options.block_type_names.split(',')
