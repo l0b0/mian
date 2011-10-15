@@ -62,9 +62,18 @@ import sys
 import warnings
 import zlib
 from optparse import OptionParser
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
-import numpy as np
+try:
+    from mpl_toolkits.mplot3d import Axes3D
+    from matplotlib import cm
+except ImportError:
+    sys.stderr.write("Error: mian requires MatPlotlib. See http://pypi.python.org/pypi/matplotlib.")
+    sys.exit(1)
+try:
+    import numpy as np
+except ImportError:
+    sys.stderr.write("Error: mian requires NumPy. See http://pypi.python.org/pypi/numpy.")
+    sys.exit(1)
+
 
 from blocks import BLOCK_TYPES, UNUSED_NAME
 
