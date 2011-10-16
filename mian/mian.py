@@ -55,7 +55,11 @@ from gzip import GzipFile
 import matplotlib as mpl
 from operator import itemgetter
 from os.path import basename, join
-from signal import signal, SIGPIPE, SIG_DFL
+SUPPORT_SIGNALS = True
+try:
+    from signal import signal, SIGPIPE, SIG_DFL
+except ImportError:
+    SUPPORT_SIGNALS = False
 from StringIO import StringIO
 import struct
 import sys
@@ -133,7 +137,8 @@ COMPRESSION_DEFLATE = 2
 BLOCKS_NBT_TAG = "Blocks"
 
 #: Avoid 'Broken pipe' message when canceling piped command
-signal(SIGPIPE, SIG_DFL)
+if SUPPORT_SIGNALS:
+    signal(SIGPIPE, SIG_DFL)
 
 
 def lookup_block_type(block_type):
