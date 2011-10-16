@@ -21,32 +21,32 @@ BLOCK_TYPES = {
     '\x04': [
         'Cobblestone'],
     '\x05': [
-        'Wooden plank',
-        'Wood',
-        'Log'],
+        'Wooden Plank'],
     '\x06': [
         'Sapling'],
     '\x07': [
         'Bedrock',
         'Adminium'],
     '\x08': [
-        'Water'],
+        'Water',
+        'Flowing Water'],
     '\x09': [
-        'Stationary water'],
+        'Stationary Water'],
     '\x0a': [
-        'Lava'],
+        'Lava',
+        'Flowing Lava'],
     '\x0b': [
-        'Stationary lava'],
+        'Stationary Lava'],
     '\x0c': [
         'Sand'],
     '\x0d': [
         'Gravel'],
     '\x0e': [
-        'Gold ore'],
+        'Gold Ore'],
     '\x0f': [
-        'Iron ore'],
+        'Iron Ore'],
     '\x10': [
-        'Coal ore'],
+        'Coal Ore'],
     '\x11': [
         'Wood',
         'Log'],
@@ -55,74 +55,74 @@ BLOCK_TYPES = {
     '\x13': [
         'Sponge'],
     '\x14': [
-        'Glass'],
+        'Glass',
+        'Glass Block'],
     '\x15': [
-        'Lapis lazuli ore',
-        'Red cloth'],
+        'Lapis Lazuli Ore'],
     '\x16': [
-        'Lapis lazuli block',
-        'Orange cloth'],
+        'Lapis Lazuli Block'],
     '\x17': [
-        'Dispenser',
-        'Yellow cloth'],
+        'Dispenser'],
     '\x18': [
-        'Sandstone',
-        'Lime cloth'],
+        'Sandstone'],
     '\x19': [
-        'Note block',
-        'Green cloth'],
+        'Note Block'],
     '\x1a': [
-        'Bed',
-        'Aqua green cloth'],
+        'Bed'],
     '\x1b': [
-        'Powered rail'],
+        'Powered Rail'],
     '\x1c': [
-        'Detector rail'],
+        'Detector Rail'],
     '\x1d': [
         'Sticky Piston'],
     '\x1e': [
         'Cobweb'],
     '\x1f': [
-        'Tall grass'],
+        'Tall Grass'],
     '\x20': [
+        'Dead Bush',
         'Dead Shrubs'],
     '\x21': [
         'Piston'],
     '\x22': [
-        'Piston extension'],
+        'Piston Extension'],
     '\x23': [
         'Wool',
-        'All colors cloth'],
+        'Cloth'],
     '\x24': [
-        'Block moved by piston'],
+        'Block Moved by Piston'],
     '\x25': [
-        'Yellow flower'],
+        'Dandelion',
+        'Yellow Flower'],
     '\x26': [
-        'Red rose'],
+        'Red Rose',
+        'Rose'],
     '\x27': [
-        'Brown mushroom'],
+        'Brown Mushroom'],
     '\x28': [
-        'Red mushroom'],
+        'Red Mushroom'],
     '\x29': [
-        'Gold block'],
+        'Gold Block',
+        'Block of Gold'],
     '\x2a': [
-        'Iron block'],
+        'Iron Block',
+        'Block of Iron'],
     '\x2b': [
-        'Double stone slab',
-        'Double slab',
-        'Double step'],
+        'Double Slab',
+        'Double Stone Slab',
+        'Double Step'],
     '\x2c': [
-        'Stone slab',
+        'Slab',
         'Step'],
     '\x2d': [
         'Brick'],
     '\x2e': [
-        'TNT'],
+        'Tnt'],
     '\x2f': [
         'Bookshelf'],
     '\x30': [
-        'Moss stone',
-        'Mossy cobblestone'],
+        'Moss Stone',
+        'Mossy Cobblestone'],
     '\x31': [
         'Obsidian'],
     '\x32': [
@@ -130,74 +130,79 @@ BLOCK_TYPES = {
     '\x33': [
         'Fire'],
     '\x34': [
-        'Monster spawner',
-        'Mob spawner'],
+        'Monster Spawner',
+        'Mob Spawner'],
     '\x35': [
-        'Wooden stairs'],
+        'Wooden Stairs'],
     '\x36': [
         'Chest'],
     '\x37': [
-        'Redstone wire'],
+        'Redstone Wire'],
     '\x38': [
-        'Diamond ore',
-        'Emerald ore'],
+        'Diamond Ore',
+        'Emerald Ore'],
     '\x39': [
-        'Diamond block',
-        'Emerald block'],
+        'Diamond Block',
+        'Emerald Block',
+        'Block of Diamond'],
     '\x3a': [
-        'Workbench'],
+        'Workbench',
+        'Crafting Table'],
     '\x3b': [
-        'Crops'],
+        'Crops',
+        'Wheat Crops',
+        'Seed'],
     '\x3c': [
         'Farmland',
         'Soil'],
     '\x3d': [
         'Furnace'],
     '\x3e': [
-        'Burning furnace'],
+        'Burning Furnace'],
     '\x3f': [
-        'Sign post'],
+        'Sign Post'],
     '\x40': [
-        'Wooden door'],
+        'Wooden Door'],
     '\x41': [
         'Ladder'],
     '\x42': [
-        'Minecart tracks',
+        'Minecart Track',
         'Rails'],
     '\x43': [
-        'Cobblestone stairs'],
+        'Cobblestone Stairs'],
     '\x44': [
-        'Wall sign'],
+        'Wall Sign'],
     '\x45': [
         'Lever'],
     '\x46': [
-        'Stone pressure plate'],
+        'Stone Pressure Plate'],
     '\x47': [
-        'Iron door'],
+        'Iron Door'],
     '\x48': [
-        'Wooden pressure plate'],
+        'Wooden Pressure Plate'],
     '\x49': [
-        'Redstone ore'],
+        'Redstone Ore'],
     '\x4a': [
-        'Glowing redstone ore'],
+        'Glowing Redstone Ore'],
     '\x4b': [
-        'Redstone torch [off]'],
+        'Redstone Torch [off]'],
     '\x4c': [
-        'Redstone torch [on]'],
+        'Redstone Torch',
+        'Redstone Torch [on]'],
     '\x4d': [
-        'Stone button'],
+        'Stone Button'],
     '\x4e': [
         'Snow'],
     '\x4f': [
         'Ice'],
     '\x50': [
-        'Snow block'],
+        'Snow Block'],
     '\x51': [
         'Cactus'],
     '\x52': [
         'Clay'],
     '\x53': [
-        'Sugar cane',
+        'Sugar Cane',
         'Reed',
         'Bamboo',
         'Papyrus'],
@@ -212,39 +217,40 @@ BLOCK_TYPES = {
         'Bloodstone',
         'Hellstone',
         'Netherstone',
-        'Red mossy cobblestone'],
+        'Red Mossy Cobblestone'],
     '\x58': [
-        'Soul sand',
-        'Hell mud',
+        'Soul Sand',
+        'Hell Mud',
         'Mud',
         'Nethermud',
-        'Slow sand'],
+        'Slow Sand'],
     '\x59': [
         'Glowstone',
         'Lightstone',
-        'Brittle gold',
+        'Brittle Gold',
         'Brightstone',
         'Australium',
         'Brimstone'],
     '\x5a': [
         'Portal'],
     '\x5b': [
-        'Jack-o-lantern'],
+        'Jack-O-Lantern'],
     '\x5c': [
-        'Cake block'],
+        'Cake Block'],
     '\x5d': [
-        'Redstone repeater [off]'],
+        'Redstone Repeater [off]'],
     '\x5e': [
-        'Redstone repeater [on]'],
+        'Redstone Repeater [on]'],
     '\x5f': [
-         'Locked chest'],
+         'Locked Chest',
+         'Aprils Fools Chest'],
     '\x60': [
          'Trapdoor'],
     '\x61': [
          'Hidden Silverfish',
          'Silverfish'],
     '\x62': [
-         'Stone Bricks'],
+         'Stone Brick'],
     '\x63': [
          'Huge Brown Mushroom'],
     '\x64': [
@@ -285,8 +291,10 @@ BLOCK_TYPES = {
          'Brewing Stand'],
     '\x76': [
          'Cauldron'],
-    '\x77': [UNUSED_NAME],
-    '\x78': [UNUSED_NAME],
+    '\x77': [
+         'Air Portal'],
+    '\x78': [
+         'Air Portal Frame'],
     '\x79': [UNUSED_NAME],
     '\x7a': [UNUSED_NAME],
     '\x7b': [UNUSED_NAME],
