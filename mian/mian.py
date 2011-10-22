@@ -52,7 +52,6 @@ from binascii import unhexlify
 from getopt import getopt, GetoptError
 from glob import glob
 from gzip import GzipFile
-import matplotlib as mpl
 from operator import itemgetter
 from os.path import basename, join
 SUPPORT_SIGNALS = True
@@ -67,15 +66,16 @@ import warnings
 import zlib
 from optparse import OptionParser
 try:
+    import matplotlib as mpl
     from mpl_toolkits.mplot3d import Axes3D
     from matplotlib import cm
 except ImportError:
-    sys.stderr.write("Error: mian requires MatPlotlib. See http://pypi.python.org/pypi/matplotlib.")
+    sys.stderr.write("Error: mian requires MatPlotlib. See http://matplotlib.sourceforge.net/users/installing.html.")
     sys.exit(1)
 try:
     import numpy as np
 except ImportError:
-    sys.stderr.write("Error: mian requires NumPy. See http://pypi.python.org/pypi/numpy.")
+    sys.stderr.write("Error: mian requires NumPy. See http://www.scipy.org/Installing_SciPy.")
     sys.exit(1)
 
 
@@ -589,7 +589,7 @@ def main(argv=None):
     prog = basename(__file__)
     description = 'mian: Mine analysis - Graph block types to altitude ' \
         'in a Minecraft save game <http://github.com/l0b0/mian>'
-    usage = 'usage: %prog <World directory>. %prog --help for options.'
+    usage = 'usage: %prog [options] <World directory>. %prog --help for options.'
     version = __version__
 
     # populating the parser
