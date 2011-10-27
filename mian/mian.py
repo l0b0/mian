@@ -11,7 +11,8 @@ mian [-b|--blocks=<list>] [-l|--list] <World directory>
 Options:
 
 -b, --blocks    Specify block types to include as a comma-separated list, using
-                either the block types or hex values from the list.
+                either the block types or hex values from the list.  Specify ALL 
+                to add all block types.
 -l, --list      List available block types and their names (from
                 <http://www.minecraftwiki.net/wiki/Data_values>).
 -n, --nether    Graph The Nether instead of the ordinary world.
@@ -51,19 +52,32 @@ from binascii import unhexlify
 from getopt import getopt, GetoptError
 from glob import glob
 from gzip import GzipFile
-import matplotlib as mpl
 from operator import itemgetter
 from os.path import basename, join
-from signal import signal, SIGPIPE, SIG_DFL
+SUPPORT_SIGNALS = True
+try:
+    from signal import signal, SIGPIPE, SIG_DFL
+except ImportError:
+    SUPPORT_SIGNALS = False
 from StringIO import StringIO
 import struct
 import sys
 import warnings
 import zlib
 from optparse import OptionParser
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
-import numpy as np
+try:
+    import matplotlib as mpl
+    from mpl_toolkits.mplot3d import Axes3D
+    from matplotlib import cm
+except ImportError:
+    sys.stderr.write("Error: mian requires MatPlotlib. See http://matplotlib.sourceforge.net/users/installing.html.")
+    sys.exit(1)
+try:
+    import numpy as np
+except ImportError:
+    sys.stderr.write("Error: mian requires NumPy. See http://www.scipy.org/Installing_SciPy.")
+    sys.exit(1)
+
 
 from blocks import BLOCK_TYPES, UNUSED_NAME
 
@@ -123,7 +137,8 @@ COMPRESSION_DEFLATE = 2
 BLOCKS_NBT_TAG = "Blocks"
 
 #: Avoid 'Broken pipe' message when canceling piped command
-signal(SIGPIPE, SIG_DFL)
+if SUPPORT_SIGNALS:
+    signal(SIGPIPE, SIG_DFL)
 
 
 def lookup_block_type(block_type):
@@ -243,11 +258,24 @@ def plot(counts, block_type_hexes, title, options):
             plt.ylabel('Z axis, negative to East (chunks)')
             plt.title(title + '(north on top of image)')
 
-    if o.save_path == None:
+    if o.plot_mode == 'table':
+        output = "Block\t" + "\t".join([str(i) for i in xrange(128)]) + "\n"
+        for index, block_counts in enumerate(counts):
+            output += BLOCK_TYPES[block_type_hexes[index]][0] + "\t"
+            output += "\t".join([str(i) for i in block_counts]) + "\n"
+        if o.save_path == None:
+            sys.stdout.write(output)
+        else:
+            print 'Saving image to: %s' % o.save_path
+            f = open(o.save_path, 'w')
+            f.write(output)
+            f.close()
+        return
+    elif o.save_path == None:
         plt.show()
     else:
-        print 'Saving image to: %s' % save_path
-        plt.savefig(save_path, dpi = o.dpi)
+        print 'Saving image to: %s' % o.save_path
+        plt.savefig(o.save_path, dpi = o.dpi)
 
 
 def mian(world_dir, block_type_hexes, options):
@@ -268,7 +296,7 @@ def mian(world_dir, block_type_hexes, options):
     else:
         mcr_files = glob(join(world_dir, 'region/*.mcr'))
 
-    if o.plot_mode == 'colormap' or o.plot_mode == 'wirframe':
+    if o.plot_mode == 'colormap' or o.plot_mode == 'wireframe':
         title += ' - map for block {0}'.format(
             BLOCK_TYPES[block_type_hexes[0]][0])
 
@@ -284,7 +312,7 @@ def mian(world_dir, block_type_hexes, options):
 
 
 def generate_graph_data(world_dir, mcr_files, block_type_hexes, plot_mode):
-    if plot_mode == 'normal':
+    if plot_mode == 'normal' or plot_mode == 'table':
         print "There are %s regions in the savegame directory" % len(mcr_files)
 
         # Create total_counts list and write a list of 128 zeros on it for
@@ -558,10 +586,10 @@ def main(argv=None):
     """Argument handling."""
 
     # things for --help and --version options
-    prog = 'mian'
-    description = 'mian: Mine analysis - Graph block types to altitude \
-        in a Minecraft save game <http://github.com/l0b0/mian>'
-    usage = 'usage: %prog [-b|--blocks=<list>] [-l|--list] <World directory>'
+    prog = basename(__file__)
+    description = 'mian: Mine analysis - Graph block types to altitude ' \
+        'in a Minecraft save game <http://github.com/l0b0/mian>'
+    usage = 'usage: %prog [options] <World directory>. %prog --help for options.'
     version = __version__
 
     # populating the parser
@@ -569,9 +597,12 @@ def main(argv=None):
         description = description, prog = prog)
 
     parser.add_option("-b", "--blocks", dest="block_type_names", default = None,
-        help="Specify block types to include as a comma-separated list, using either the block types or hex values from the list.")
+        help="Specify block types to include as a comma-separated list, using "\
+        "either the block types or hex values from the list. Specify ALL to include "\
+        "all block types.")
     parser.add_option("-l", "--list", action = "store_true", dest = "print_blocks",
-        help = "List available block types and their names (from <http://www.minecraftwiki.net/wiki/Data_values>)")
+        help = "List available block types and their names "\
+        "(from <http://www.minecraftwiki.net/wiki/Data_values>)")
     parser.add_option("-n", "--nether", action = "store_true", default = False, dest = "nether",
         help = "Graph The Nether instead of the ordinary world.")
     parser.add_option("--log", action = "store_true", default = False, dest = "log",
@@ -579,9 +610,11 @@ def main(argv=None):
     parser.add_option("-o", "--output", default = None, dest = "save_path",
         help = "Save the result to file instead of showing an interactive GUI.")
     parser.add_option("--dpi", type = 'int', default = 100, dest = "dpi",
-        help = "The resolution in dots per inch for the --output option. Default = 100 (800x600).")
+        help = "The resolution in dots per inch for the --output option. "\
+        "Default = 100 (800x600).")
     parser.add_option("--plot-mode", "-p", type = 'string', default = 'normal', dest = 'plot_mode',
-        help = "The plot modes are: normal, colormap and wireframe (3D). Warning! Wireframe can be really resource hungry with big maps")
+        help = "The plot modes are: normal, colormap, wireframe (3D) and table. "\
+        "Warning! Wireframe can be really resource hungry with big maps")
 
     (options, args) = parser.parse_args()
 
@@ -600,7 +633,7 @@ def main(argv=None):
     if not options.dpi > 0:
         parser.error('dpi should be an interger greater than 0, given \'%s\'' % options.dpi)
 
-    plot_modes = ["normal", "colormap", "wireframe"]
+    plot_modes = ["normal", "table", "colormap", "wireframe"]
     if options.plot_mode not in plot_modes:
         parser.error('The plot mode \'{0}\' is not recognized'.format(options.plot_mode))
 
@@ -609,6 +642,9 @@ def main(argv=None):
     # Look up block_types
     if options.block_type_names == None:
         block_type_names = DEFAULT_BLOCK_TYPES
+    elif options.block_type_names.upper() == 'ALL':
+        # FIXME ugly: we now add names of known block, only to later convert them back to hex codes.
+        block_type_names = [BLOCK_TYPES[chr(i)][0] for i in xrange(0,256) if BLOCK_TYPES[chr(i)] != [UNUSED_NAME]]
     else:
         block_type_names = options.block_type_names.split(',')
 
