@@ -53,7 +53,7 @@ from getopt import getopt, GetoptError
 from glob import glob
 from gzip import GzipFile
 from operator import itemgetter
-from os.path import basename, join
+import os.path
 SUPPORT_SIGNALS = True
 try:
     from signal import signal, SIGPIPE, SIG_DFL
@@ -287,14 +287,14 @@ def mian(world_dir, block_type_hexes, options):
     @param nether: Whether or not to graph The Nether.
     """
     o = options
-    title = basename(world_dir.rstrip('/'))
+    title = os.path.basename(world_dir.rstrip(os.path.sep))
 
     # All world blocks are stored in .mcr files
     if o.nether:
-        mcr_files = glob(join(world_dir, 'DIM-1/region/*.mcr'))
+        mcr_files = glob(os.path.join(world_dir, 'DIM-1', 'region', '*.mcr'))
         title += ' Nether'
     else:
-        mcr_files = glob(join(world_dir, 'region/*.mcr'))
+        mcr_files = glob(os.path.join(world_dir, 'region', '*.mcr'))
 
     if o.plot_mode == 'colormap' or o.plot_mode == 'wireframe':
         title += ' - map for block {0}'.format(
@@ -458,7 +458,7 @@ def get_region_coords(mcr_file):
     """ Takes the name of a file with or without the full path and
     returns 2 integers with the coordinates of a region file """
 
-    regionXZ = basename(mcr_file).lstrip('r.').split('.', 2)[:2]
+    regionXZ = os.path.basename(mcr_file).lstrip('r.').split('.', 2)[:2]
     return int(regionXZ[0]), int(regionXZ[1])
 
 
@@ -472,8 +472,8 @@ def count_chunk_blocks(world_dir, chunkXZ, block_type):
 
     # Determine the propper region file.
     rXZ = (chunkXZ[0] / 32, chunkXZ[1] / 32)
-    mcr_file = world_dir.rstrip('/') + "/region/r." + str(rXZ[0]) + \
-        "." + str(rXZ[1]) + ".mcr"
+    mcr_file = os.path.join(world_dir.rstrip(os.path.sep), 'region',
+        'r.{0}.{1}.mcr'.format(*rXZ))
 
     # Determine chunk coords in region file.
     local_chunkXZ = (divmod(chunkXZ[0], 32)[1], + divmod(chunkXZ[1], 32)[1])
@@ -586,7 +586,7 @@ def main(argv=None):
     """Argument handling."""
 
     # things for --help and --version options
-    prog = basename(__file__)
+    prog = os.path.basename(__file__)
     description = 'mian: Mine analysis - Graph block types to altitude ' \
         'in a Minecraft save game <http://github.com/l0b0/mian>'
     usage = 'usage: %prog [options] <World directory>. %prog --help for options.'
