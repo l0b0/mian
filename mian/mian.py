@@ -207,6 +207,22 @@ def print_block_types():
             sys.stdout.write(', '.join(block_names) + '\n')
 
 
+def compute_totals(block_counts):
+    counts = [0 for i in range(len(block_counts))]
+    relpercents = [0 for i in range(len(block_counts))]
+
+    for i, layers in enumerate(block_counts):
+        counts[i] = sum(layers)
+    summ = sum(counts)
+    relpercents = [(i * 100.0 / summ) for i in counts]
+
+    out = {
+        'counts': counts,
+        'relpercents': relpercents,
+    }
+    return out
+
+
 def plot(counts, block_type_hexes, title, options):
     """
     Actual plotting of data.
@@ -220,6 +236,22 @@ def plot(counts, block_type_hexes, title, options):
 
     import matplotlib.pyplot as plt
 
+    labels = ['' for i in counts]
+    for i in range(len(counts)):
+        labels[i] = BLOCK_TYPES[block_type_hexes[i]][0]
+
+    # reformat labels with computed totals + relpercents
+    if o.totals:
+        totals = compute_totals(counts)
+
+        labelmax = max(len(s) for s in labels)
+        for i in range(len(counts)):
+            labels[i] = '%-*.*s %6.2f%%\' %9d' % (
+                labelmax, labelmax, labels[i],
+                totals['relpercents'][i],
+                totals['counts'][i]
+            )
+
     if o.plot_mode == 'normal':
         fig = plt.figure()
         fig.canvas.set_window_title(title)
@@ -228,7 +260,7 @@ def plot(counts, block_type_hexes, title, options):
             for index, block_counts in enumerate(counts):
                 plt.semilogy(
                     block_counts,
-                    label=BLOCK_TYPES[block_type_hexes[index]][0],
+                    label=labels[index],
                     linewidth=1,
                     nonposy='clip',
                     picker=3)
@@ -236,7 +268,7 @@ def plot(counts, block_type_hexes, title, options):
             for index, block_counts in enumerate(counts):
                 plt.plot(
                     block_counts,
-                    label=BLOCK_TYPES[block_type_hexes[index]][0],
+                    label=labels[index],
                     linewidth=1,
                     picker=3)
 
@@ -649,6 +681,8 @@ def main(argv=None):
         "Warning! Wireframe can be really resource hungry with big maps")
     parser.add_option("--xticks", type = 'int', default = 8, dest = 'xticks',
         help = "X axis ticks interval. Default: 8")
+    parser.add_option("--no-totals", action = "store_false", default = True, dest = "totals",
+        help = "Don't show totals for each graph")
 
     (options, args) = parser.parse_args()
 
