@@ -94,6 +94,25 @@ DEFAULT_BLOCK_TYPES = [
     'obsidian',
     '49']
 
+# pretty stuff about dimensions
+DIMENSIONS = {
+    'overworld': dict(
+        title = '',
+        path_mcr = 'region',
+        worldfmt_craftbukkit = None,
+    ),
+    'nether': dict(
+        title = ' Nether',
+        path_mcr = os.path.join('DIM-1', 'region'),
+        worldfmt_craftbukkit = '{0}_nether',
+    ),
+    'the_end': dict(
+        title = ' The End',
+        path_mcr = os.path.join('DIM1', 'region'),
+        worldfmt_craftbukkit = '{0}_the_end',
+    ),
+}
+
 #: Height
 CHUNK_SIZE_Y = 128
 
@@ -289,12 +308,20 @@ def mian(world_dir, block_type_hexes, options):
     o = options
     title = os.path.basename(world_dir.rstrip(os.path.sep))
 
+    # apply dimensions magic :)
+    title += DIMENSIONS[o.dimension]['title']
+    path_mcr = DIMENSIONS[o.dimension]['path_mcr']
+    worldfmt = DIMENSIONS[o.dimension]['worldfmt_craftbukkit']
+    # CraftBukkit uses this world-dimension layout:
+    #   world/region
+    #   world_nether/DIM-1/region
+    #   world_the_end/DIM1/region
+    # WARNING: 20120203 winex: world_dir could be modified here
+    if worldfmt and not os.path.isdir(os.path.join(world_dir, path_mcr)):
+        world_dir = worldfmt.format(world_dir.rstrip(os.path.sep))
+
     # All world blocks are stored in .mcr files
-    if o.nether:
-        mcr_files = glob(os.path.join(world_dir, 'DIM-1', 'region', '*.mcr'))
-        title += ' Nether'
-    else:
-        mcr_files = glob(os.path.join(world_dir, 'region', '*.mcr'))
+    mcr_files = glob(os.path.join(world_dir, path_mcr, '*.mcr'))
 
     if o.plot_mode == 'colormap' or o.plot_mode == 'wireframe':
         title += ' - map for block {0}'.format(
@@ -472,6 +499,7 @@ def count_chunk_blocks(world_dir, chunkXZ, block_type):
 
     # Determine the propper region file.
     rXZ = (chunkXZ[0] / 32, chunkXZ[1] / 32)
+    # TODO: 20120203 winex: use dimensions magic here
     mcr_file = os.path.join(world_dir.rstrip(os.path.sep), 'region',
         'r.{0}.{1}.mcr'.format(*rXZ))
 
@@ -603,8 +631,8 @@ def main(argv=None):
     parser.add_option("-l", "--list", action = "store_true", dest = "print_blocks",
         help = "List available block types and their names "\
         "(from <http://www.minecraftwiki.net/wiki/Data_values>)")
-    parser.add_option("-n", "--nether", action = "store_true", default = False, dest = "nether",
-        help = "Graph The Nether instead of the ordinary world.")
+    parser.add_option("-d", "--dimension", default = 'overworld', dest = "dimension",
+        help = "Supported dimensions: overworld (default), nether, the_end")
     parser.add_option("--log", action = "store_true", default = False, dest = "log",
         help = "Render logarithmic output.")
     parser.add_option("-o", "--output", default = None, dest = "save_path",
@@ -629,6 +657,9 @@ def main(argv=None):
 
     if len(args) != 1:
         parser.error('need to specify exactly one save directory')
+
+    if options.dimension not in DIMENSIONS:
+        parser.error('The dimension \'{0}\' is not recognized'.format(options.dimension))
 
     if not options.dpi > 0:
         parser.error('dpi should be an interger greater than 0, given \'%s\'' % options.dpi)
