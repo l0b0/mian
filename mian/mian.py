@@ -86,13 +86,15 @@ HEX_DIGITS = '0123456789abcdef'
 
 #: When running without --blocks
 DEFAULT_BLOCK_TYPES = [
-    'clay',
-    'coal ore',
-    'diamond ore',
-    'gold ore',
-    'iron ore',
+    'lapis lazuli ore',
     'obsidian',
-    '49']
+    '49',   # redstone ore
+    'diamond ore',
+    'iron ore',
+    'gold ore',
+    'coal ore',
+    'clay',
+]
 
 # pretty stuff about dimensions
 DIMENSIONS = {
