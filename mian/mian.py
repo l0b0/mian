@@ -284,7 +284,7 @@ def plot(counts, block_type_hexes, title, options):
 
         fig.canvas.mpl_connect('pick_event', on_pick)
 
-        plt.legend()
+        plt.legend(prop={'size': 10, 'family': 'monospace'})
         plt.xlabel(LABEL_X)
         plt.ylabel(LABEL_Y)
         if o.xticks:
