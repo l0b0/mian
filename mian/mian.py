@@ -253,6 +253,8 @@ def plot(counts, block_type_hexes, title, options):
         plt.legend()
         plt.xlabel(LABEL_X)
         plt.ylabel(LABEL_Y)
+        if o.xticks:
+            plt.xticks(np.arange(0, CHUNK_SIZE_Y + 1, o.xticks))
 
     elif o.plot_mode == 'colormap' or o.plot_mode == 'wireframe':
         X, Z, min_chunk_x, min_chunk_z, max_chunk_x, max_chunk_z, Data = counts
@@ -643,6 +645,8 @@ def main(argv=None):
     parser.add_option("--plot-mode", "-p", type = 'string', default = 'normal', dest = 'plot_mode',
         help = "The plot modes are: normal, colormap, wireframe (3D) and table. "\
         "Warning! Wireframe can be really resource hungry with big maps")
+    parser.add_option("--xticks", type = 'int', default = 8, dest = 'xticks',
+        help = "X axis ticks interval. Default: 8")
 
     (options, args) = parser.parse_args()
 
