@@ -53,7 +53,7 @@ from getopt import getopt, GetoptError
 from glob import glob
 from gzip import GzipFile
 from operator import itemgetter
-from os.path import basename, join
+import os.path
 SUPPORT_SIGNALS = True
 try:
     from signal import signal, SIGPIPE, SIG_DFL
@@ -86,13 +86,34 @@ HEX_DIGITS = '0123456789abcdef'
 
 #: When running without --blocks
 DEFAULT_BLOCK_TYPES = [
-    'clay',
-    'coal ore',
-    'diamond ore',
-    'gold ore',
-    'iron ore',
+    'lapis lazuli ore',
     'obsidian',
-    '49']
+    '49',   # redstone ore
+    'diamond ore',
+    'iron ore',
+    'gold ore',
+    'coal ore',
+    'clay',
+]
+
+# pretty stuff about dimensions
+DIMENSIONS = {
+    'overworld': dict(
+        title = '',
+        path_mcr = 'region',
+        worldfmt_craftbukkit = None,
+    ),
+    'nether': dict(
+        title = ' Nether',
+        path_mcr = os.path.join('DIM-1', 'region'),
+        worldfmt_craftbukkit = '{0}_nether',
+    ),
+    'the_end': dict(
+        title = ' The End',
+        path_mcr = os.path.join('DIM1', 'region'),
+        worldfmt_craftbukkit = '{0}_the_end',
+    ),
+}
 
 #: Height
 CHUNK_SIZE_Y = 128
@@ -186,6 +207,22 @@ def print_block_types():
             sys.stdout.write(', '.join(block_names) + '\n')
 
 
+def compute_totals(block_counts):
+    counts = [0 for i in range(len(block_counts))]
+    relpercents = [0 for i in range(len(block_counts))]
+
+    for i, layers in enumerate(block_counts):
+        counts[i] = sum(layers)
+    summ = sum(counts)
+    relpercents = [(i * 100.0 / summ) for i in counts]
+
+    out = {
+        'counts': counts,
+        'relpercents': relpercents,
+    }
+    return out
+
+
 def plot(counts, block_type_hexes, title, options):
     """
     Actual plotting of data.
@@ -199,6 +236,22 @@ def plot(counts, block_type_hexes, title, options):
 
     import matplotlib.pyplot as plt
 
+    labels = ['' for i in counts]
+    for i in range(len(counts)):
+        labels[i] = BLOCK_TYPES[block_type_hexes[i]][0]
+
+    # reformat labels with computed totals + relpercents
+    if o.totals:
+        totals = compute_totals(counts)
+
+        labelmax = max(len(s) for s in labels)
+        for i in range(len(counts)):
+            labels[i] = '%-*.*s %6.2f%%\' %9d' % (
+                labelmax, labelmax, labels[i],
+                totals['relpercents'][i],
+                totals['counts'][i]
+            )
+
     if o.plot_mode == 'normal':
         fig = plt.figure()
         fig.canvas.set_window_title(title)
@@ -207,7 +260,7 @@ def plot(counts, block_type_hexes, title, options):
             for index, block_counts in enumerate(counts):
                 plt.semilogy(
                     block_counts,
-                    label=BLOCK_TYPES[block_type_hexes[index]][0],
+                    label=labels[index],
                     linewidth=1,
                     nonposy='clip',
                     picker=3)
@@ -215,7 +268,7 @@ def plot(counts, block_type_hexes, title, options):
             for index, block_counts in enumerate(counts):
                 plt.plot(
                     block_counts,
-                    label=BLOCK_TYPES[block_type_hexes[index]][0],
+                    label=labels[index],
                     linewidth=1,
                     picker=3)
 
@@ -231,9 +284,11 @@ def plot(counts, block_type_hexes, title, options):
 
         fig.canvas.mpl_connect('pick_event', on_pick)
 
-        plt.legend()
+        plt.legend(prop={'size': 10, 'family': 'monospace'})
         plt.xlabel(LABEL_X)
         plt.ylabel(LABEL_Y)
+        if o.xticks:
+            plt.xticks(np.arange(0, CHUNK_SIZE_Y + 1, o.xticks))
 
     elif o.plot_mode == 'colormap' or o.plot_mode == 'wireframe':
         X, Z, min_chunk_x, min_chunk_z, max_chunk_x, max_chunk_z, Data = counts
@@ -287,14 +342,22 @@ def mian(world_dir, block_type_hexes, options):
     @param nether: Whether or not to graph The Nether.
     """
     o = options
-    title = basename(world_dir.rstrip('/'))
+    title = os.path.basename(world_dir.rstrip(os.path.sep))
+
+    # apply dimensions magic :)
+    title += DIMENSIONS[o.dimension]['title']
+    path_mcr = DIMENSIONS[o.dimension]['path_mcr']
+    worldfmt = DIMENSIONS[o.dimension]['worldfmt_craftbukkit']
+    # CraftBukkit uses this world-dimension layout:
+    #   world/region
+    #   world_nether/DIM-1/region
+    #   world_the_end/DIM1/region
+    # WARNING: 20120203 winex: world_dir could be modified here
+    if worldfmt and not os.path.isdir(os.path.join(world_dir, path_mcr)):
+        world_dir = worldfmt.format(world_dir.rstrip(os.path.sep))
 
     # All world blocks are stored in .mcr files
-    if o.nether:
-        mcr_files = glob(join(world_dir, 'DIM-1/region/*.mcr'))
-        title += ' Nether'
-    else:
-        mcr_files = glob(join(world_dir, 'region/*.mcr'))
+    mcr_files = glob(os.path.join(world_dir, path_mcr, '*.mcr'))
 
     if o.plot_mode == 'colormap' or o.plot_mode == 'wireframe':
         title += ' - map for block {0}'.format(
@@ -458,7 +521,7 @@ def get_region_coords(mcr_file):
     """ Takes the name of a file with or without the full path and
     returns 2 integers with the coordinates of a region file """
 
-    regionXZ = basename(mcr_file).lstrip('r.').split('.', 2)[:2]
+    regionXZ = os.path.basename(mcr_file).lstrip('r.').split('.', 2)[:2]
     return int(regionXZ[0]), int(regionXZ[1])
 
 
@@ -472,8 +535,9 @@ def count_chunk_blocks(world_dir, chunkXZ, block_type):
 
     # Determine the propper region file.
     rXZ = (chunkXZ[0] / 32, chunkXZ[1] / 32)
-    mcr_file = world_dir.rstrip('/') + "/region/r." + str(rXZ[0]) + \
-        "." + str(rXZ[1]) + ".mcr"
+    # TODO: 20120203 winex: use dimensions magic here
+    mcr_file = os.path.join(world_dir.rstrip(os.path.sep), 'region',
+        'r.{0}.{1}.mcr'.format(*rXZ))
 
     # Determine chunk coords in region file.
     local_chunkXZ = (divmod(chunkXZ[0], 32)[1], + divmod(chunkXZ[1], 32)[1])
@@ -586,7 +650,7 @@ def main(argv=None):
     """Argument handling."""
 
     # things for --help and --version options
-    prog = basename(__file__)
+    prog = os.path.basename(__file__)
     description = 'mian: Mine analysis - Graph block types to altitude ' \
         'in a Minecraft save game <http://github.com/l0b0/mian>'
     usage = 'usage: %prog [options] <World directory>. %prog --help for options.'
@@ -603,8 +667,8 @@ def main(argv=None):
     parser.add_option("-l", "--list", action = "store_true", dest = "print_blocks",
         help = "List available block types and their names "\
         "(from <http://www.minecraftwiki.net/wiki/Data_values>)")
-    parser.add_option("-n", "--nether", action = "store_true", default = False, dest = "nether",
-        help = "Graph The Nether instead of the ordinary world.")
+    parser.add_option("-d", "--dimension", default = 'overworld', dest = "dimension",
+        help = "Supported dimensions: overworld (default), nether, the_end")
     parser.add_option("--log", action = "store_true", default = False, dest = "log",
         help = "Render logarithmic output.")
     parser.add_option("-o", "--output", default = None, dest = "save_path",
@@ -615,6 +679,10 @@ def main(argv=None):
     parser.add_option("--plot-mode", "-p", type = 'string', default = 'normal', dest = 'plot_mode',
         help = "The plot modes are: normal, colormap, wireframe (3D) and table. "\
         "Warning! Wireframe can be really resource hungry with big maps")
+    parser.add_option("--xticks", type = 'int', default = 8, dest = 'xticks',
+        help = "X axis ticks interval. Default: 8")
+    parser.add_option("--no-totals", action = "store_false", default = True, dest = "totals",
+        help = "Don't show totals for each graph")
 
     (options, args) = parser.parse_args()
 
@@ -629,6 +697,9 @@ def main(argv=None):
 
     if len(args) != 1:
         parser.error('need to specify exactly one save directory')
+
+    if options.dimension not in DIMENSIONS:
+        parser.error('The dimension \'{0}\' is not recognized'.format(options.dimension))
 
     if not options.dpi > 0:
         parser.error('dpi should be an interger greater than 0, given \'%s\'' % options.dpi)
