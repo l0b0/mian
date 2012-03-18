@@ -236,23 +236,23 @@ def plot(counts, block_type_hexes, title, options):
 
     import matplotlib.pyplot as plt
 
-    labels = ['' for i in counts]
-    for i in range(len(counts)):
-        labels[i] = BLOCK_TYPES[block_type_hexes[i]][0]
-
-    # reformat labels with computed totals + relpercents
-    if o.totals:
-        totals = compute_totals(counts)
-
-        labelmax = max(len(s) for s in labels)
-        for i in range(len(counts)):
-            labels[i] = '%-*.*s %6.2f%%\' %9d' % (
-                labelmax, labelmax, labels[i],
-                totals['relpercents'][i],
-                totals['counts'][i]
-            )
-
     if o.plot_mode == 'normal':
+        labels = ['' for i in counts]
+        for i in range(len(counts)):
+            labels[i] = BLOCK_TYPES[block_type_hexes[i]][0]
+
+        # reformat labels with computed totals + relpercents
+        if o.totals:
+            totals = compute_totals(counts)
+
+            labelmax = max(len(s) for s in labels)
+            for i in range(len(counts)):
+                labels[i] = '%-*.*s %6.2f%%\' %9d' % (
+                    labelmax, labelmax, labels[i],
+                    totals['relpercents'][i],
+                    totals['counts'][i]
+                )
+
         fig = plt.figure()
         fig.canvas.set_window_title(title)
 
