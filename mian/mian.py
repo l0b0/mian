@@ -297,6 +297,9 @@ def plot(counts, block_type_hexes, title, options):
         lbl_x = 'X axis (towards East)'
         lbl_y = 'Z axis (towards South)'
 
+        def coords_formatter(x):
+            return '%d' % np.floor(x)
+
         if o.plot_mode == 'colormap':
             im = plt.imshow(Data,
                 cmap=cm.jet,
@@ -315,6 +318,11 @@ def plot(counts, block_type_hexes, title, options):
             plt.xlabel(lbl_x + ', chunks')
             plt.ylabel(lbl_y + ', chunks')
             plt.title(title)
+
+        # use custom formatter for mouse hover
+        ax = plt.subplot(111)
+        ax.fmt_xdata = coords_formatter
+        ax.fmt_ydata = coords_formatter
 
     if o.plot_mode == 'table':
         output = "Block\t" + "\t".join([str(i) for i in xrange(128)]) + "\n"
