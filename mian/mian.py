@@ -296,6 +296,7 @@ def plot(counts, block_type_hexes, title, options):
         # North is -Z since Minecraft-1.0 (actually, MinecraftBeta-1.9pre4)
         lbl_x = 'X axis (towards East)'
         lbl_y = 'Z axis (towards South)'
+        lbl_units = 'units'
 
         def coords_formatter(x):
             return '%d' % np.floor(x)
@@ -307,17 +308,17 @@ def plot(counts, block_type_hexes, title, options):
             # Don't use interpolation, chunk as pixels
             im.set_interpolation('nearest')
             plt.colorbar()
-            plt.xlabel(lbl_x + ', blocks')
-            plt.ylabel(lbl_y + ', blocks')
-            plt.title(title)
+            lbl_units = 'blocks'
 
         elif o.plot_mode == 'wireframe':
             fig = plt.figure()
             ax = Axes3D(fig)
             ax.plot_wireframe(X, Z, Data, rstride=1, cstride=1)
-            plt.xlabel(lbl_x + ', chunks')
-            plt.ylabel(lbl_y + ', chunks')
-            plt.title(title)
+            lbl_units = 'chunks'
+
+        plt.xlabel(lbl_x + ', ' + lbl_units)
+        plt.ylabel(lbl_y + ', ' + lbl_units)
+        plt.title(title)
 
         # use custom formatter for mouse hover
         ax = plt.subplot(111)
