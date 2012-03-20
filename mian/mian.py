@@ -236,23 +236,23 @@ def plot(counts, block_type_hexes, title, options):
 
     import matplotlib.pyplot as plt
 
-    labels = ['' for i in counts]
-    for i in range(len(counts)):
-        labels[i] = BLOCK_TYPES[block_type_hexes[i]][0]
-
-    # reformat labels with computed totals + relpercents
-    if o.totals:
-        totals = compute_totals(counts)
-
-        labelmax = max(len(s) for s in labels)
-        for i in range(len(counts)):
-            labels[i] = '%-*.*s %6.2f%%\' %9d' % (
-                labelmax, labelmax, labels[i],
-                totals['relpercents'][i],
-                totals['counts'][i]
-            )
-
     if o.plot_mode == 'normal':
+        labels = ['' for i in counts]
+        for i in range(len(counts)):
+            labels[i] = BLOCK_TYPES[block_type_hexes[i]][0]
+
+        # reformat labels with computed totals + relpercents
+        if o.totals:
+            totals = compute_totals(counts)
+
+            labelmax = max(len(s) for s in labels)
+            for i in range(len(counts)):
+                labels[i] = '%-*.*s %6.2f%%\' %9d' % (
+                    labelmax, labelmax, labels[i],
+                    totals['relpercents'][i],
+                    totals['counts'][i]
+                )
+
         fig = plt.figure()
         fig.canvas.set_window_title(title)
 
@@ -293,25 +293,37 @@ def plot(counts, block_type_hexes, title, options):
     elif o.plot_mode == 'colormap' or o.plot_mode == 'wireframe':
         X, Z, min_chunk_x, min_chunk_z, max_chunk_x, max_chunk_z, Data = counts
 
+        # North is -Z since Minecraft-1.0 (actually, MinecraftBeta-1.9pre4)
+        lbl_x = 'X axis (towards East)'
+        lbl_y = 'Z axis (towards South)'
+        lbl_units = 'units'
+
+        def coords_formatter(x):
+            return '%d' % np.floor(x)
+
         if o.plot_mode == 'colormap':
-            Data = np.rot90(Data, 3) # north on the top of the image
             im = plt.imshow(Data,
                 cmap=cm.jet,
-                extent=(max_chunk_z, min_chunk_z, max_chunk_x, min_chunk_x))
+                extent=(min_chunk_x, max_chunk_x, max_chunk_z, min_chunk_z))
             # Don't use interpolation, chunk as pixels
             im.set_interpolation('nearest')
             plt.colorbar()
-            plt.ylabel('X axis, negative to North (blocks)')
-            plt.xlabel('Z axis, negative to East (blocks)')
-            plt.title(title + '(north on top of image)')
+            lbl_units = 'blocks'
 
         elif o.plot_mode == 'wireframe':
             fig = plt.figure()
             ax = Axes3D(fig)
-            ax.plot_wireframe(Z, X, Data, rstride=1, cstride=1)
-            plt.xlabel('X axis, negative to North (chunks)')
-            plt.ylabel('Z axis, negative to East (chunks)')
-            plt.title(title + '(north on top of image)')
+            ax.plot_wireframe(X, Z, Data, rstride=1, cstride=1)
+            lbl_units = 'chunks'
+
+        plt.xlabel(lbl_x + ', ' + lbl_units)
+        plt.ylabel(lbl_y + ', ' + lbl_units)
+        plt.title(title)
+
+        # use custom formatter for mouse hover
+        ax = plt.subplot(111)
+        ax.fmt_xdata = coords_formatter
+        ax.fmt_ydata = coords_formatter
 
     if o.plot_mode == 'table':
         output = "Block\t" + "\t".join([str(i) for i in xrange(128)]) + "\n"
