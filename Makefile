@@ -10,7 +10,7 @@ GIT_TAG = $(GIT) tag -au $(GPG_ID)
 # Python
 PYTHON = /usr/bin/python$(PYTHON_VERSION)
 PYTHON_CMD = $(PYTHON) -c
-PYTHON_VERSION := 2.6
+PYTHON_VERSION := 2.7
 SETUP = $(PYTHON) setup.py
 INSTALL_OPTIONS := -O2
 UPLOAD_OPTIONS = --sign --identity=$(GPG_ID)

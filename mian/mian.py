@@ -188,9 +188,8 @@ def lookup_block_type(block_type):
     # Name substring search, could have multiple results
     result = []
     for block_hex, block_names in BLOCK_TYPES.iteritems():  # Block
-        for block_name in block_names:  # Synonyms
-            if block_name.lower().find(block_type) != -1:
-                result.append(block_hex)
+        if any(block_name.lower().find(block_type) != -1 for block_name in block_names):
+            result.append(block_hex)
     if result == []:
         warnings.warn('Unknown block type %s' % block_type)
 
